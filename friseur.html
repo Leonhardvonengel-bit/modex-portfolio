@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SNIP Studio – Friseursalon</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --black: #0d0d0d;
+      --white: #f5f5f0;
+      --accent: #c8f230;
+      --gray: #1a1a1a;
+      --muted: #666;
+      --border: rgba(255,255,255,0.1);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--black); color: var(--white); cursor: none; }
+
+    .cursor { position: fixed; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.1s; mix-blend-mode: difference; }
+    .cursor-ring { position: fixed; width: 40px; height: 40px; border: 1px solid rgba(200,242,48,0.4); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.15s ease; }
+
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      padding: 24px 60px;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: all 0.4s;
+    }
+    nav.scrolled { background: rgba(13,13,13,0.97); padding: 16px 60px; border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 4px; color: var(--white); }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a { color: rgba(245,245,240,0.6); text-decoration: none; font-size: 13px; letter-spacing: 1px; transition: color 0.3s; }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-book { padding: 10px 24px; background: var(--accent); color: var(--black); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; font-weight: 500; transition: all 0.3s; }
+    .nav-book:hover { background: #d4f542; transform: translateY(-1px); }
+
+    .page { display: none; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* HOME */
+    .hero { height: 100vh; position: relative; overflow: hidden; display: flex; align-items: center; }
+    .hero-bg { position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1800') center/cover no-repeat; filter: brightness(0.35); }
+    .hero-content { position: relative; z-index: 2; padding: 0 60px; max-width: 800px; }
+    .hero-tag { display: inline-block; background: var(--accent); color: var(--black); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; padding: 6px 14px; margin-bottom: 28px; font-weight: 500; opacity: 0; animation: fadeUp 0.8s 0.2s forwards; }
+    .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(80px, 12vw, 160px); line-height: 0.9; letter-spacing: 2px; opacity: 0; animation: fadeUp 0.8s 0.4s forwards; }
+    .hero-title span { color: var(--accent); }
+    .hero-sub { font-size: 16px; color: rgba(245,245,240,0.5); margin-top: 24px; margin-bottom: 40px; font-weight: 300; letter-spacing: 1px; opacity: 0; animation: fadeUp 0.8s 0.6s forwards; }
+    .hero-cta { display: flex; gap: 16px; opacity: 0; animation: fadeUp 0.8s 0.8s forwards; }
+    .btn-accent { padding: 16px 40px; background: var(--accent); color: var(--black); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; font-weight: 500; transition: all 0.3s; }
+    .btn-accent:hover { background: #d4f542; transform: translateY(-2px); }
+    .btn-ghost { padding: 16px 40px; border: 1px solid var(--border); color: var(--white); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; transition: all 0.3s; }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .hero-number { position: absolute; right: 60px; bottom: 60px; font-family: 'Bebas Neue', sans-serif; font-size: 140px; color: rgba(255,255,255,0.04); letter-spacing: -4px; line-height: 1; z-index: 1; }
+
+    .section { padding: 100px 60px; }
+    .label { font-size: 10px; letter-spacing: 4px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+    .title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px, 5vw, 64px); letter-spacing: 2px; line-height: 1; }
+
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; max-width: 1200px; margin: 0 auto; }
+    .about-img { position: relative; }
+    .about-img img { width: 100%; height: 560px; object-fit: cover; filter: brightness(0.85); }
+    .about-img-tag { position: absolute; top: 24px; left: 24px; background: var(--accent); color: var(--black); padding: 10px 16px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 500; }
+    .about-text { }
+    .about-text p { color: var(--muted); font-size: 15px; line-height: 1.9; font-weight: 300; margin-bottom: 20px; margin-top: 24px; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
+    .stat { border-left: 2px solid var(--accent); padding-left: 16px; }
+    .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--accent); line-height: 1; }
+    .stat-label { font-size: 12px; color: var(--muted); letter-spacing: 1px; margin-top: 4px; }
+
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 60px; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .service { background: var(--gray); padding: 44px 36px; transition: background 0.3s; }
+    .service:hover { background: #222; }
+    .service:hover .service-num { color: var(--accent); }
+    .service-num { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: rgba(255,255,255,0.08); line-height: 1; margin-bottom: 16px; transition: color 0.3s; }
+    .service-name { font-size: 17px; font-weight: 500; margin-bottom: 8px; }
+    .service-desc { font-size: 13px; color: var(--muted); line-height: 1.7; font-weight: 300; margin-bottom: 20px; }
+    .service-price { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--accent); letter-spacing: 1px; }
+
+    /* TEAM PAGE */
+    .page-hero { height: 40vh; position: relative; display: flex; align-items: flex-end; padding: 50px 60px; overflow: hidden; }
+    .page-hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: brightness(0.3); }
+    .page-hero-content { position: relative; z-index: 2; }
+    .page-hero-content .label { margin-bottom: 8px; }
+    .page-hero-content h1 { font-family: 'Bebas Neue', sans-serif; font-size: 72px; letter-spacing: 3px; line-height: 1; }
+
+    .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; max-width: 1200px; margin: 60px auto 0; }
+    .team-card { position: relative; overflow: hidden; }
+    .team-card img { width: 100%; height: 420px; object-fit: cover; filter: brightness(0.75); transition: all 0.5s; }
+    .team-card:hover img { filter: brightness(0.5); transform: scale(1.03); }
+    .team-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 28px; background: linear-gradient(transparent, rgba(13,13,13,0.9)); }
+    .team-name { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; }
+    .team-role { font-size: 12px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+    .team-hover { position: absolute; top: 24px; right: 24px; background: var(--accent); color: var(--black); padding: 8px 14px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; font-weight: 500; opacity: 0; transition: opacity 0.3s; }
+    .team-card:hover .team-hover { opacity: 1; }
+
+    /* BOOKING PAGE */
+    .booking-content { max-width: 1100px; margin: 0 auto; padding: 80px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+    .booking-info h2 { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 2px; line-height: 1; margin-bottom: 32px; }
+    .booking-info h2 span { color: var(--accent); }
+    .info-block { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
+    .info-block:last-child { border-bottom: none; }
+    .info-block-label { font-size: 10px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+    .info-block-value { font-size: 14px; color: rgba(245,245,240,0.7); line-height: 1.8; font-weight: 300; }
+    .info-block-value a { color: var(--white); text-decoration: none; transition: color 0.3s; }
+    .info-block-value a:hover { color: var(--accent); }
+
+    .booking-form h2 { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 2px; line-height: 1; margin-bottom: 32px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 10px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; background: var(--gray); border: 1px solid var(--border);
+      color: var(--white); padding: 14px 16px; font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 300; outline: none; transition: border-color 0.3s; -webkit-appearance: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .form-group select option { background: var(--gray); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .submit-btn { width: 100%; padding: 18px; background: var(--accent); color: var(--black); font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; font-weight: 500; border: none; cursor: pointer; transition: all 0.3s; margin-top: 8px; }
+    .submit-btn:hover { background: #d4f542; }
+    .form-success { display: none; text-align: center; padding: 40px; border: 1px solid var(--accent); }
+    .form-success h3 { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--accent); letter-spacing: 2px; margin-bottom: 12px; }
+    .form-success p { color: var(--muted); font-size: 13px; }
+
+    footer { background: #080808; padding: 60px; border-top: 1px solid var(--border); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; }
+    .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 4px; margin-bottom: 14px; }
+    .footer-logo span { color: var(--accent); }
+    .footer-brand p { font-size: 13px; color: var(--muted); line-height: 1.8; font-weight: 300; max-width: 220px; }
+    .footer-col h4 { font-size: 10px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 18px; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 10px; }
+    .footer-col ul li a { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 300; transition: color 0.3s; }
+    .footer-col ul li a:hover { color: var(--white); }
+    .footer-bottom { max-width: 1200px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .footer-bottom p { font-size: 12px; color: var(--muted); }
+    .footer-bottom .credit { color: var(--accent); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      nav { padding: 18px 24px; }
+      nav.scrolled { padding: 14px 24px; }
+      .nav-links { display: none; }
+      .hero-content { padding: 0 24px; }
+      .section { padding: 60px 24px; }
+      .about-grid { grid-template-columns: 1fr; gap: 40px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr 1fr; }
+      .booking-content { grid-template-columns: 1fr; gap: 40px; padding: 60px 24px; }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .footer-bottom { flex-direction: column; gap: 10px; }
+      footer { padding: 50px 24px; }
+      .page-hero { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <nav id="navbar">
+    <div class="nav-logo">SNIP<span>.</span></div>
+    <ul class="nav-links">
+      <li><a href="#" onclick="showPage('home')">Home</a></li>
+      <li><a href="#" onclick="showPage('team')">Team</a></li>
+      <li><a href="#" onclick="showPage('booking')">Buchung</a></li>
+    </ul>
+    <a href="#" class="nav-book" onclick="showPage('booking')">Termin buchen</a>
+  </nav>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-content">
+        <div class="hero-tag">Berlin Mitte · Seit 2018</div>
+        <h1 class="hero-title">YOUR<br>BEST<br><span>CUT.</span></h1>
+        <p class="hero-sub">Moderner Unisex Salon im Herzen Berlins.<br>Präzision trifft Stil.</p>
+        <div class="hero-cta">
+          <a href="#" class="btn-accent" onclick="showPage('booking')">Termin buchen</a>
+          <a href="#" class="btn-ghost" onclick="showPage('team')">Unser Team</a>
+        </div>
+      </div>
+      <div class="hero-number">01</div>
+    </section>
+
+    <section class="section" style="background: var(--black);">
+      <div class="about-grid">
+        <div class="about-img reveal">
+          <img src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=800" alt="Salon Interior"/>
+          <div class="about-img-tag">Est. 2018</div>
+        </div>
+        <div class="about-text reveal">
+          <p class="label">Über uns</p>
+          <h2 class="title">MEHR ALS NUR<br>EIN HAARSCHNITT</h2>
+          <p>SNIP. ist kein gewöhnlicher Salon. Wir verbinden urbanen Style mit handwerklicher Präzision — für alle, die ihren Look ernst nehmen.</p>
+          <p>Unser Team aus erfahrenen Stylistinnen und Stylisten arbeitet ohne Kompromisse. Jeder Termin ist ein Erlebnis.</p>
+          <div class="stats">
+            <div class="stat"><div class="stat-num">6+</div><div class="stat-label">Jahre Erfahrung</div></div>
+            <div class="stat"><div class="stat-num">4K+</div><div class="stat-label">Zufriedene Kunden</div></div>
+            <div class="stat"><div class="stat-num">8</div><div class="stat-label">Stylisten im Team</div></div>
+            <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Leidenschaft</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background: #0d0d0d; padding-top: 80px;">
+      <div style="max-width:1200px; margin:0 auto;">
+        <p class="label reveal">Leistungen</p>
+        <h2 class="title reveal">WAS WIR MACHEN</h2>
+      </div>
+      <div class="services-grid">
+        <div class="service reveal">
+          <div class="service-num">01</div>
+          <div class="service-name">Haarschnitt</div>
+          <div class="service-desc">Präziser Schnitt, angepasst an deine Gesichtsform und deinen persönlichen Style.</div>
+          <div class="service-price">Ab 35 €</div>
+        </div>
+        <div class="service reveal">
+          <div class="service-num">02</div>
+          <div class="service-name">Färben & Highlights</div>
+          <div class="service-desc">Vollfarbe, Balayage oder gezielte Highlights — wir bringen Farbe in deinen Look.</div>
+          <div class="service-price">Ab 65 €</div>
+        </div>
+        <div class="service reveal">
+          <div class="service-num">03</div>
+          <div class="service-name">Bart & Rasur</div>
+          <div class="service-desc">Klassische Nassrasur oder Bartpflege — gepflegt und scharf.</div>
+          <div class="service-price">Ab 25 €</div>
+        </div>
+        <div class="service reveal">
+          <div class="service-num">04</div>
+          <div class="service-name">Behandlungen</div>
+          <div class="service-desc">Tiefenpflege, Keratin-Behandlung oder Kopfmassage für gesundes Haar.</div>
+          <div class="service-price">Ab 45 €</div>
+        </div>
+        <div class="service reveal">
+          <div class="service-num">05</div>
+          <div class="service-name">Bridal & Events</div>
+          <div class="service-desc">Styling für besondere Anlässe — Hochzeiten, Shootings, Events.</div>
+          <div class="service-price">Ab 120 €</div>
+        </div>
+        <div class="service reveal">
+          <div class="service-num">06</div>
+          <div class="service-name">Kids Cut</div>
+          <div class="service-desc">Entspannter Haarschnitt für die Kleinen — geduldig und mit Spaß.</div>
+          <div class="service-price">Ab 20 €</div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="footer-logo">SNIP<span>.</span></div><p>Moderner Unisex Salon in Berlin Mitte. Präzision trifft Stil — seit 2018.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a href="#" onclick="showPage('home')">Home</a></li><li><a href="#" onclick="showPage('team')">Team</a></li><li><a href="#" onclick="showPage('booking')">Buchung</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Mo–Fr: 9–20 Uhr</a></li><li><a>Samstag: 9–18 Uhr</a></li><li><a style="color:#c8f230">Sonntag: geschlossen</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+49 30 123 456</a></li><li><a>Rosenthaler Str. 40</a></li><li><a>10178 Berlin</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 SNIP. Salon Berlin</p><p>Website von <span class="credit">MODEX</span></p></div>
+    </footer>
+  </div>
+
+  <!-- TEAM -->
+  <div class="page" id="page-team">
+    <div class="page-hero">
+      <div class="page-hero-bg" style="background-image: url('https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1600');"></div>
+      <div class="page-hero-content">
+        <p class="label">SNIP. Berlin</p>
+        <h1>UNSER<br>TEAM</h1>
+      </div>
+    </div>
+    <section class="section" style="padding-top: 60px;">
+      <div style="max-width:1200px; margin: 0 auto;">
+        <p class="label reveal">Die Menschen hinter SNIP.</p>
+        <h2 class="title reveal">PASSION &<br>PRÄZISION</h2>
+      </div>
+      <div class="team-grid" style="margin-top:50px;">
+        <div class="team-card reveal">
+          <img src="https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=600" alt="Stylistin"/>
+          <div class="team-info"><div class="team-name">SARA KLEIN</div><div class="team-role">Senior Stylistin</div></div>
+          <div class="team-hover">Profil</div>
+        </div>
+        <div class="team-card reveal">
+          <img src="https://images.unsplash.com/photo-1622287162716-f311baa1a2b8?w=600" alt="Stylist"/>
+          <div class="team-info"><div class="team-name">MAX WEBER</div><div class="team-role">Bart & Schnitt</div></div>
+          <div class="team-hover">Profil</div>
+        </div>
+        <div class="team-card reveal">
+          <img src="https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600" alt="Stylistin"/>
+          <div class="team-info"><div class="team-name">LENA BAUER</div><div class="team-role">Color Expertin</div></div>
+          <div class="team-hover">Profil</div>
+        </div>
+      </div>
+    </section>
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="footer-logo">SNIP<span>.</span></div><p>Moderner Unisex Salon in Berlin Mitte.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a href="#" onclick="showPage('home')">Home</a></li><li><a href="#" onclick="showPage('team')">Team</a></li><li><a href="#" onclick="showPage('booking')">Buchung</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Mo–Fr: 9–20 Uhr</a></li><li><a>Samstag: 9–18 Uhr</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+49 30 123 456</a></li><li><a>Rosenthaler Str. 40</a></li><li><a>10178 Berlin</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 SNIP. Salon Berlin</p><p>Website von <span class="credit">MODEX</span></p></div>
+    </footer>
+  </div>
+
+  <!-- BOOKING -->
+  <div class="page" id="page-booking">
+    <div class="page-hero">
+      <div class="page-hero-bg" style="background-image: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600');"></div>
+      <div class="page-hero-content">
+        <p class="label">SNIP. Berlin</p>
+        <h1>TERMIN<br>BUCHEN</h1>
+      </div>
+    </div>
+    <div class="booking-content">
+      <div class="booking-info">
+        <h2>KOMM<br>VORBEI <span>.</span></h2>
+        <div class="info-block"><div class="info-block-label">Adresse</div><div class="info-block-value">Rosenthaler Str. 40<br>10178 Berlin Mitte<br>U-Bahn: Weinmeisterstr.</div></div>
+        <div class="info-block"><div class="info-block-label">Öffnungszeiten</div><div class="info-block-value">Montag – Freitag: 9 – 20 Uhr<br>Samstag: 9 – 18 Uhr<br>Sonntag: geschlossen</div></div>
+        <div class="info-block"><div class="info-block-label">Telefon & E-Mail</div><div class="info-block-value"><a href="tel:+4930123456">+49 30 123 456</a><br><a href="mailto:hello@snip-berlin.de">hello@snip-berlin.de</a></div></div>
+        <div class="info-block"><div class="info-block-label">Standort</div>
+          <a href="https://maps.google.com/?q=Rosenthaler+Str+40+10178+Berlin" target="_blank" style="display:inline-flex;align-items:center;gap:10px;padding:12px 22px;border:1px solid rgba(200,242,48,0.3);color:var(--accent);text-decoration:none;font-size:11px;letter-spacing:2px;text-transform:uppercase;transition:all 0.3s;margin-top:4px;">
+            📍 Auf Google Maps öffnen
+          </a>
+        </div>
+      </div>
+      <div class="booking-form">
+        <h2>DEIN<br>TERMIN <span style="color:var(--accent)">.</span></h2>
+        <div id="bookingForm">
+          <div class="form-row">
+            <div class="form-group"><label>Vorname</label><input type="text" placeholder="Max"/></div>
+            <div class="form-group"><label>Nachname</label><input type="text" placeholder="Mustermann"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Telefon</label><input type="tel" placeholder="+49 ..."/></div>
+            <div class="form-group"><label>E-Mail</label><input type="email" placeholder="max@email.de"/></div>
+          </div>
+          <div class="form-group"><label>Leistung</label>
+            <select>
+              <option>Haarschnitt ab 35 €</option>
+              <option>Färben & Highlights ab 65 €</option>
+              <option>Bart & Rasur ab 25 €</option>
+              <option>Behandlung ab 45 €</option>
+              <option>Bridal & Events ab 120 €</option>
+              <option>Kids Cut ab 20 €</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Datum</label><input type="date"/></div>
+            <div class="form-group"><label>Uhrzeit</label>
+              <select>
+                <option>09:00</option><option>09:30</option><option>10:00</option>
+                <option>10:30</option><option>11:00</option><option>12:00</option>
+                <option>13:00</option><option>14:00</option><option>15:00</option>
+                <option>16:00</option><option>17:00</option><option>18:00</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group"><label>Stylist wählen</label>
+            <select><option>Keine Präferenz</option><option>Sara Klein</option><option>Max Weber</option><option>Lena Bauer</option></select>
+          </div>
+          <button class="submit-btn" onclick="submitBooking()">Termin anfragen</button>
+        </div>
+        <div class="form-success" id="bookingSuccess">
+          <h3>BOOKED.</h3>
+          <p>Deine Anfrage ist eingegangen. Wir melden uns innerhalb von 2 Stunden bei dir.</p>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="footer-logo">SNIP<span>.</span></div><p>Moderner Unisex Salon in Berlin Mitte.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a href="#" onclick="showPage('home')">Home</a></li><li><a href="#" onclick="showPage('team')">Team</a></li><li><a href="#" onclick="showPage('booking')">Buchung</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Mo–Fr: 9–20 Uhr</a></li><li><a>Samstag: 9–18 Uhr</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+49 30 123 456</a></li><li><a>Rosenthaler Str. 40</a></li><li><a>10178 Berlin</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 SNIP. Salon Berlin</p><p>Website von <span class="credit">MODEX</span></p></div>
+    </footer>
+  </div>
+
+  <script>
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      initReveal();
+    }
+    function submitBooking() {
+      document.getElementById('bookingForm').style.display = 'none';
+      document.getElementById('bookingSuccess').style.display = 'block';
+    }
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+    });
+    function initReveal() {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach(el => { el.classList.remove('visible'); obs.observe(el); });
+    }
+    initReveal();
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx+'px'; cursor.style.top = my+'px'; });
+    function animRing() { rx += (mx-rx)*0.12; ry += (my-ry)*0.12; ring.style.left = rx+'px'; ring.style.top = ry+'px'; requestAnimationFrame(animRing); }
+    animRing();
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => { ring.style.transform='translate(-50%,-50%) scale(2)'; });
+      el.addEventListener('mouseleave', () => { ring.style.transform='translate(-50%,-50%) scale(1)'; });
+    });
+  </script>
+</body>
+</html>

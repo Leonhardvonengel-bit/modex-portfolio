@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Il Convivio Roma – Ristorante</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Josefin+Sans:wght@200;300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --nero: #0a0705;
+      --oro: #b8975a;
+      --oro-light: #d4b07a;
+      --crema: #f5efe6;
+      --grigio: #2a2420;
+      --text-muted: #8a7d70;
+      --border: rgba(184,151,90,0.25);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Josefin Sans', sans-serif; background: var(--nero); color: var(--crema); cursor: none; }
+
+    /* CUSTOM CURSOR */
+    .cursor { position: fixed; width: 8px; height: 8px; background: var(--oro); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.1s; }
+    .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid rgba(184,151,90,0.5); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.15s ease; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      padding: 28px 60px;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: background 0.4s, padding 0.4s;
+    }
+    nav.scrolled { background: rgba(10,7,5,0.97); padding: 18px 60px; border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--oro); letter-spacing: 3px; font-weight: 300; }
+    .nav-links { display: flex; gap: 40px; list-style: none; }
+    .nav-links a { color: var(--crema); text-decoration: none; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 300; transition: color 0.3s; position: relative; }
+    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--oro); transition: width 0.3s; }
+    .nav-links a:hover { color: var(--oro); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-reserve { padding: 10px 24px; border: 1px solid var(--oro); color: var(--oro); text-decoration: none; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; transition: all 0.3s; }
+    .nav-reserve:hover { background: var(--oro); color: var(--nero); }
+
+    /* PAGE SYSTEM */
+    .page { display: none; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* ===== HOME PAGE ===== */
+    .hero {
+      height: 100vh; position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1800') center/cover no-repeat;
+      transform: scale(1.1);
+      transition: transform 8s ease;
+    }
+    .hero-bg.loaded { transform: scale(1); }
+    .hero-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(10,7,5,0.85) 0%, rgba(10,7,5,0.5) 100%); }
+    .hero-content { position: relative; z-index: 2; text-align: center; padding: 0 20px; }
+    .hero-eyebrow { font-size: 10px; letter-spacing: 6px; color: var(--oro); text-transform: uppercase; margin-bottom: 24px; opacity: 0; animation: fadeUp 1s 0.3s forwards; }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(56px, 8vw, 110px); font-weight: 300; line-height: 0.95; color: var(--crema); margin-bottom: 10px; opacity: 0; animation: fadeUp 1s 0.6s forwards; }
+    .hero-title em { font-style: italic; color: var(--oro); }
+    .hero-subtitle { font-size: 11px; letter-spacing: 5px; color: rgba(245,239,230,0.6); text-transform: uppercase; margin-top: 20px; margin-bottom: 48px; opacity: 0; animation: fadeUp 1s 0.9s forwards; }
+    .hero-cta { display: flex; gap: 20px; justify-content: center; opacity: 0; animation: fadeUp 1s 1.2s forwards; }
+    .btn-primary { padding: 16px 44px; background: var(--oro); color: var(--nero); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; font-family: 'Josefin Sans', sans-serif; transition: all 0.3s; }
+    .btn-primary:hover { background: var(--oro-light); transform: translateY(-2px); }
+    .btn-outline { padding: 16px 44px; border: 1px solid rgba(245,239,230,0.4); color: var(--crema); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; font-family: 'Josefin Sans', sans-serif; transition: all 0.3s; }
+    .btn-outline:hover { border-color: var(--oro); color: var(--oro); }
+    .hero-scroll { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0; animation: fadeUp 1s 1.5s forwards; }
+    .hero-scroll span { font-size: 9px; letter-spacing: 4px; color: var(--text-muted); text-transform: uppercase; }
+    .scroll-line { width: 1px; height: 50px; background: linear-gradient(var(--oro), transparent); animation: scrollAnim 2s infinite; }
+
+    /* HOME SECTIONS */
+    .section { padding: 120px 60px; }
+    .section-label { font-size: 9px; letter-spacing: 5px; color: var(--oro); text-transform: uppercase; margin-bottom: 16px; }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px, 4vw, 56px); font-weight: 300; line-height: 1.1; }
+    .section-title em { font-style: italic; color: var(--oro); }
+    .divider { width: 40px; height: 1px; background: var(--oro); margin: 24px 0; }
+
+    .intro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; max-width: 1200px; margin: 0 auto; }
+    .intro-text p { color: var(--text-muted); font-size: 14px; line-height: 2; font-weight: 300; margin-bottom: 20px; }
+    .intro-img { position: relative; }
+    .intro-img img { width: 100%; height: 500px; object-fit: cover; filter: brightness(0.9); }
+    .intro-img-badge { position: absolute; bottom: -24px; left: -24px; background: var(--oro); padding: 28px; text-align: center; }
+    .intro-img-badge .num { font-family: 'Cormorant Garamond', serif; font-size: 48px; color: var(--nero); line-height: 1; }
+    .intro-img-badge .txt { font-size: 9px; letter-spacing: 2px; color: var(--nero); text-transform: uppercase; }
+
+    .features { background: var(--grigio); }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); max-width: 1200px; margin: 60px auto 0; }
+    .feature { background: var(--grigio); padding: 50px 40px; text-align: center; transition: background 0.3s; }
+    .feature:hover { background: #322c28; }
+    .feature-icon { font-size: 32px; margin-bottom: 20px; }
+    .feature h3 { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; margin-bottom: 12px; }
+    .feature p { font-size: 13px; color: var(--text-muted); line-height: 1.8; font-weight: 300; }
+
+    /* ===== MENU PAGE ===== */
+    .menu-hero { height: 45vh; background: url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1600') center/cover; position: relative; display: flex; align-items: flex-end; padding: 60px; }
+    .menu-hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent, rgba(10,7,5,0.9)); }
+    .menu-hero-text { position: relative; }
+    .menu-hero-text h1 { font-family: 'Cormorant Garamond', serif; font-size: 64px; font-weight: 300; }
+    .menu-hero-text p { color: var(--text-muted); font-size: 12px; letter-spacing: 3px; text-transform: uppercase; }
+
+    .menu-content { max-width: 1000px; margin: 0 auto; padding: 80px 60px; }
+    .menu-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 60px; }
+    .menu-tab { padding: 16px 32px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.3s; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; font-family: 'Josefin Sans', sans-serif; }
+    .menu-tab.active { color: var(--oro); border-bottom-color: var(--oro); }
+    .menu-tab:hover { color: var(--crema); }
+
+    .menu-section { display: none; }
+    .menu-section.active { display: block; }
+    .menu-category-title { font-family: 'Cormorant Garamond', serif; font-size: 13px; letter-spacing: 4px; color: var(--oro); text-transform: uppercase; margin-bottom: 32px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .menu-item { display: flex; justify-content: space-between; align-items: baseline; padding: 20px 0; border-bottom: 1px solid rgba(184,151,90,0.08); transition: all 0.3s; }
+    .menu-item:hover { padding-left: 12px; }
+    .menu-item-left { flex: 1; }
+    .menu-item-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; margin-bottom: 4px; }
+    .menu-item-desc { font-size: 12px; color: var(--text-muted); font-weight: 300; font-style: italic; }
+    .menu-item-price { font-size: 16px; color: var(--oro); font-family: 'Cormorant Garamond', serif; margin-left: 24px; }
+    .menu-spacer { height: 48px; }
+
+    /* ===== GALLERY PAGE ===== */
+    .gallery-hero { height: 40vh; background: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1600') center/cover; position: relative; display: flex; align-items: flex-end; padding: 60px; }
+    .gallery-hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent, rgba(10,7,5,0.9)); }
+    .gallery-hero-text { position: relative; }
+    .gallery-hero-text h1 { font-family: 'Cormorant Garamond', serif; font-size: 64px; font-weight: 300; }
+
+    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding: 3px; }
+    .gallery-item { position: relative; overflow: hidden; aspect-ratio: 1; cursor: pointer; }
+    .gallery-item.wide { grid-column: span 2; aspect-ratio: 2/1; }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; filter: brightness(0.85); }
+    .gallery-item:hover img { transform: scale(1.05); filter: brightness(1); }
+    .gallery-item-overlay { position: absolute; inset: 0; background: linear-gradient(transparent, rgba(10,7,5,0.7)); opacity: 0; transition: opacity 0.3s; display: flex; align-items: flex-end; padding: 24px; }
+    .gallery-item:hover .gallery-item-overlay { opacity: 1; }
+    .gallery-item-overlay span { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; color: var(--crema); }
+
+    /* ===== CONTACT PAGE ===== */
+    .contact-hero { height: 40vh; background: url('https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=1600') center/cover; position: relative; display: flex; align-items: flex-end; padding: 60px; }
+    .contact-hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent, rgba(10,7,5,0.9)); }
+    .contact-hero-text { position: relative; }
+    .contact-hero-text h1 { font-family: 'Cormorant Garamond', serif; font-size: 64px; font-weight: 300; }
+
+    .contact-content { max-width: 1200px; margin: 0 auto; padding: 80px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+    .contact-info h2 { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 300; margin-bottom: 40px; }
+    .contact-detail { margin-bottom: 36px; }
+    .contact-detail-label { font-size: 9px; letter-spacing: 4px; color: var(--oro); text-transform: uppercase; margin-bottom: 8px; }
+    .contact-detail-value { font-size: 15px; color: var(--crema); font-weight: 300; line-height: 1.7; }
+    .contact-detail-value a { color: var(--crema); text-decoration: none; transition: color 0.3s; }
+    .contact-detail-value a:hover { color: var(--oro); }
+
+    .contact-form h2 { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 300; margin-bottom: 40px; }
+    .form-group { margin-bottom: 24px; }
+    .form-group label { display: block; font-size: 9px; letter-spacing: 3px; color: var(--oro); text-transform: uppercase; margin-bottom: 10px; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      color: var(--crema); padding: 14px 18px; font-family: 'Josefin Sans', sans-serif;
+      font-size: 13px; font-weight: 300; outline: none; transition: border-color 0.3s;
+      -webkit-appearance: none;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--oro); }
+    .form-group textarea { height: 120px; resize: vertical; }
+    .form-group select option { background: var(--grigio); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .submit-btn { width: 100%; padding: 18px; background: var(--oro); color: var(--nero); font-family: 'Josefin Sans', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.3s; margin-top: 8px; }
+    .submit-btn:hover { background: var(--oro-light); }
+    .form-success { display: none; text-align: center; padding: 40px; border: 1px solid var(--oro); }
+    .form-success h3 { font-family: 'Cormorant Garamond', serif; font-size: 28px; color: var(--oro); margin-bottom: 12px; }
+    .form-success p { color: var(--text-muted); font-size: 13px; }
+
+    /* FOOTER */
+    footer { background: #050302; padding: 60px; border-top: 1px solid var(--border); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; }
+    .footer-brand .logo { font-family: 'Cormorant Garamond', serif; font-size: 26px; color: var(--oro); letter-spacing: 3px; font-weight: 300; margin-bottom: 16px; }
+    .footer-brand p { font-size: 12px; color: var(--text-muted); line-height: 1.8; font-weight: 300; max-width: 240px; }
+    .footer-col h4 { font-size: 9px; letter-spacing: 4px; color: var(--oro); text-transform: uppercase; margin-bottom: 20px; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 10px; }
+    .footer-col ul li a { color: var(--text-muted); text-decoration: none; font-size: 12px; font-weight: 300; transition: color 0.3s; letter-spacing: 1px; }
+    .footer-col ul li a:hover { color: var(--crema); }
+    .footer-bottom { max-width: 1200px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .footer-bottom p { font-size: 11px; color: var(--text-muted); font-weight: 300; }
+    .footer-bottom .credit { color: var(--oro); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scrollAnim { 0%,100% { opacity: 1; transform: scaleY(1); transform-origin: top; } 50% { opacity: 0.4; } }
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      nav { padding: 20px 24px; }
+      nav.scrolled { padding: 14px 24px; }
+      .nav-links { display: none; }
+      .section { padding: 70px 24px; }
+      .intro-grid { grid-template-columns: 1fr; gap: 40px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .menu-content { padding: 60px 24px; }
+      .menu-tabs { overflow-x: auto; }
+      .gallery-grid { grid-template-columns: 1fr 1fr; }
+      .gallery-item.wide { grid-column: span 2; }
+      .contact-content { grid-template-columns: 1fr; gap: 40px; padding: 60px 24px; }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+      .hero-cta { flex-direction: column; align-items: center; }
+      .menu-hero, .gallery-hero, .contact-hero { padding: 40px 24px; }
+      .menu-hero-text h1, .gallery-hero-text h1, .contact-hero-text h1 { font-size: 42px; }
+      footer { padding: 50px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <div class="nav-logo">Il Convivio</div>
+    <ul class="nav-links">
+      <li><a href="#" onclick="showPage('home')">Home</a></li>
+      <li><a href="#" onclick="showPage('menu')">Speisekarte</a></li>
+      <li><a href="#" onclick="showPage('gallery')">Galerie</a></li>
+      <li><a href="#" onclick="showPage('contact')">Kontakt</a></li>
+    </ul>
+    <a href="#" class="nav-reserve" onclick="showPage('contact')">Reservieren</a>
+  </nav>
+
+  <!-- ===== HOME ===== -->
+  <div class="page active" id="page-home">
+    <section class="hero">
+      <div class="hero-bg" id="heroBg"></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <p class="hero-eyebrow">Via della Croce 12 · Roma</p>
+        <h1 class="hero-title">Il <em>Convivio</em><br>Roma</h1>
+        <p class="hero-subtitle">Cucina Romana dal 1962</p>
+        <div class="hero-cta">
+          <a href="#" class="btn-primary" onclick="showPage('menu')">Speisekarte</a>
+          <a href="#" class="btn-outline" onclick="showPage('contact')">Tisch reservieren</a>
+        </div>
+      </div>
+      <div class="hero-scroll">
+        <span>Entdecken</span>
+        <div class="scroll-line"></div>
+      </div>
+    </section>
+
+    <section class="section" style="background: var(--nero);">
+      <div class="intro-grid">
+        <div class="intro-text reveal">
+          <p class="section-label">Unsere Geschichte</p>
+          <h2 class="section-title">Seit über <em>60 Jahren</em><br>am Herzen Roms</h2>
+          <div class="divider"></div>
+          <p>Il Convivio öffnete seine Türen im Jahr 1962, als Giuseppe Ferrante seine Mutter aus Trastevere bat, ihre besten Rezepte für die Gäste Roms zu kochen. Was als kleines Familienlokal begann, ist heute eines der bekanntesten Restaurants der Ewigen Stadt.</p>
+          <p>Jedes Gericht erzählt von der reichen Küchentradition Roms — von der handgezogenen Pasta bis zur langsam geschmorten Abbacchio.</p>
+          <a href="#" class="btn-primary" style="display:inline-block; margin-top:24px;" onclick="showPage('menu')">Zur Speisekarte</a>
+        </div>
+        <div class="intro-img reveal">
+          <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800" alt="Restaurant Interior" />
+          <div class="intro-img-badge">
+            <div class="num">62</div>
+            <div class="txt">Jahre Tradition</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section features">
+      <div style="max-width:1200px; margin:0 auto; text-align:center;">
+        <p class="section-label reveal">Warum Il Convivio</p>
+        <h2 class="section-title reveal">Das macht uns <em>besonders</em></h2>
+      </div>
+      <div class="features-grid">
+        <div class="feature reveal">
+          <div class="feature-icon">🌿</div>
+          <h3>Frische Zutaten</h3>
+          <p>Täglich frisch vom Mercato Trionfale — saisonale Produkte aus der Region Lazio.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-icon">👨‍🍳</div>
+          <h3>Familienrezepte</h3>
+          <p>Originalrezepte aus drei Generationen, seit 1962 unverändert weitergegeben.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-icon">🍷</div>
+          <h3>Römische Weine</h3>
+          <p>Unsere Weinkarte umfasst über 80 Positionen aus Lazio, Toskana und Piemont.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <div class="logo">Il Convivio</div>
+          <p>Authentische römische Küche seit 1962. Via della Croce 12, Roma.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="#" onclick="showPage('home')">Home</a></li>
+            <li><a href="#" onclick="showPage('menu')">Speisekarte</a></li>
+            <li><a href="#" onclick="showPage('gallery')">Galerie</a></li>
+            <li><a href="#" onclick="showPage('contact')">Kontakt</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Öffnungszeiten</h4>
+          <ul>
+            <li><a>Mo–Fr 12–15 Uhr</a></li>
+            <li><a>Mo–Fr 19–23 Uhr</a></li>
+            <li><a>Sa–So 12–23 Uhr</a></li>
+            <li><a style="color:var(--oro)">Di geschlossen</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Kontakt</h4>
+          <ul>
+            <li><a href="tel:+390612345">+39 06 123 456</a></li>
+            <li><a href="mailto:info@ilconvivio.it">info@ilconvivio.it</a></li>
+            <li><a>Via della Croce 12</a></li>
+            <li><a>00187 Roma</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Il Convivio Roma · Alle Rechte vorbehalten</p>
+        <p>Website von <span class="credit">MODEX</span></p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ===== MENU ===== -->
+  <div class="page" id="page-menu">
+    <div class="menu-hero">
+      <div class="menu-hero-text">
+        <p style="font-size:10px;letter-spacing:4px;color:var(--oro);text-transform:uppercase;margin-bottom:8px;">Il Convivio Roma</p>
+        <h1>La <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--oro)">Carta</em></h1>
+        <p>Cucina Romana Tradizionale</p>
+      </div>
+    </div>
+
+    <div class="menu-content">
+      <div class="menu-tabs">
+        <button class="menu-tab active" onclick="switchTab('antipasti')">Antipasti</button>
+        <button class="menu-tab" onclick="switchTab('primi')">Primi Piatti</button>
+        <button class="menu-tab" onclick="switchTab('secondi')">Secondi Piatti</button>
+        <button class="menu-tab" onclick="switchTab('dolci')">Dolci</button>
+        <button class="menu-tab" onclick="switchTab('vini')">Vini</button>
+      </div>
+
+      <div class="menu-section active" id="tab-antipasti">
+        <p class="menu-category-title">Antipasti della Casa</p>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Bruschetta al Pomodoro</div><div class="menu-item-desc">Geröstetes Brot, Kirschtomaten, Basilikum, Extra Vergine</div></div><div class="menu-item-price">7 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Supplì al Telefono</div><div class="menu-item-desc">Römer Reisbällchen mit Tomatensugo und Mozzarella</div></div><div class="menu-item-price">9 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Carpaccio di Manzo</div><div class="menu-item-desc">Hauchdünnes Rindfleisch, Rucola, Parmigiano, Zitrone</div></div><div class="menu-item-price">14 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Burrata con Prosciutto</div><div class="menu-item-desc">Cremige Burrata, 24 Monate gereifter Parmaschinken</div></div><div class="menu-item-price">16 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Fiori di Zucca Fritti</div><div class="menu-item-desc">Frittierte Zucchiniblüten, Ricotta, Anchovis</div></div><div class="menu-item-price">11 €</div></div>
+      </div>
+
+      <div class="menu-section" id="tab-primi">
+        <p class="menu-category-title">Paste Fresche</p>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Cacio e Pepe</div><div class="menu-item-desc">Tonnarelli, Pecorino Romano DOP, schwarzer Pfeffer</div></div><div class="menu-item-price">16 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Carbonara della Nonna</div><div class="menu-item-desc">Rigatoni, Guanciale, Uovo, Pecorino Romano — Originalrezept</div></div><div class="menu-item-price">18 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Amatriciana</div><div class="menu-item-desc">Bucatini, Guanciale, San Marzano Tomaten, Pecorino</div></div><div class="menu-item-price">17 €</div></div>
+        <div class="menu-spacer"></div>
+        <p class="menu-category-title">Zuppe & Risotti</p>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Risotto ai Porcini</div><div class="menu-item-desc">Carnaroli Reis, frische Steinpilze, Parmigiano, Butter</div></div><div class="menu-item-price">22 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Zuppa di Lenticchie</div><div class="menu-item-desc">Linsensuppe nach Nonnas Rezept, Olivenöl, Rosmarin</div></div><div class="menu-item-price">12 €</div></div>
+      </div>
+
+      <div class="menu-section" id="tab-secondi">
+        <p class="menu-category-title">Carne</p>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Abbacchio alla Romana</div><div class="menu-item-desc">Geschmortes Lamm nach römischer Art, Rosmarin, Weißwein</div></div><div class="menu-item-price">28 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Saltimbocca alla Romana</div><div class="menu-item-desc">Kalbsschnitzel, Parmaschinken, Salbei, Weißwein</div></div><div class="menu-item-price">26 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Bistecca di Chianina</div><div class="menu-item-desc">350g Florentiner Steak, Rosmarinkartoffeln, Salsa Verde</div></div><div class="menu-item-price">42 €</div></div>
+        <div class="menu-spacer"></div>
+        <p class="menu-category-title">Pesce</p>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Branzino al Forno</div><div class="menu-item-desc">Ofengebackener Wolfsbarsch, Kapern, Zitrone, Kräuter</div></div><div class="menu-item-price">32 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Gamberi alla Busara</div><div class="menu-item-desc">Riesengarnelen, Tomaten, Knoblauch, Weißwein, Petersilie</div></div><div class="menu-item-price">34 €</div></div>
+      </div>
+
+      <div class="menu-section" id="tab-dolci">
+        <p class="menu-category-title">Dolci della Casa</p>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Tiramisù Originale</div><div class="menu-item-desc">Hausgemacht nach Nonnas Rezept, Mascarpone, Löffelbiskuit</div></div><div class="menu-item-price">9 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Panna Cotta al Caramello</div><div class="menu-item-desc">Cremige Panna Cotta mit Salzkaramell und Mandeln</div></div><div class="menu-item-price">8 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Torta della Nonna</div><div class="menu-item-desc">Mürbeteig, Ricotta-Creme, Pinienkerne, Puderzucker</div></div><div class="menu-item-price">8 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Gelato Artigianale</div><div class="menu-item-desc">3 Kugeln hausgemachtes Eis — Frage nach den Sorten des Tages</div></div><div class="menu-item-price">7 €</div></div>
+      </div>
+
+      <div class="menu-section" id="tab-vini">
+        <p class="menu-category-title">Vini Bianchi</p>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Frascati Superiore DOC</div><div class="menu-item-desc">Cantina di Frascati · Lazio · Frisch, mineralisch</div></div><div class="menu-item-price">28 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Pinot Grigio delle Venezie</div><div class="menu-item-desc">Santa Margherita · Trentino · Elegant, zitrusfrisch</div></div><div class="menu-item-price">36 €</div></div>
+        <div class="menu-spacer"></div>
+        <p class="menu-category-title">Vini Rossi</p>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Cesanese del Piglio DOCG</div><div class="menu-item-desc">Cantina Coletti Conti · Lazio · Kräftig, würzig</div></div><div class="menu-item-price">34 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Barolo DOCG</div><div class="menu-item-desc">Marchesi di Barolo · Piemont · Komplex, langanhaltend</div></div><div class="menu-item-price">68 €</div></div>
+        <div class="menu-item"><div class="menu-item-left"><div class="menu-item-name">Brunello di Montalcino</div><div class="menu-item-desc">Biondi Santi · Toskana · Legendär, tiefgründig</div></div><div class="menu-item-price">120 €</div></div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="logo">Il Convivio</div><p>Authentische römische Küche seit 1962.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a href="#" onclick="showPage('home')">Home</a></li><li><a href="#" onclick="showPage('menu')">Speisekarte</a></li><li><a href="#" onclick="showPage('gallery')">Galerie</a></li><li><a href="#" onclick="showPage('contact')">Kontakt</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Mo–Fr 12–15 Uhr</a></li><li><a>Mo–Fr 19–23 Uhr</a></li><li><a>Sa–So 12–23 Uhr</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+39 06 123 456</a></li><li><a>Via della Croce 12</a></li><li><a>00187 Roma</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 Il Convivio Roma</p><p>Website von <span class="credit">MODEX</span></p></div>
+    </footer>
+  </div>
+
+  <!-- ===== GALLERY ===== -->
+  <div class="page" id="page-gallery">
+    <div class="gallery-hero">
+      <div class="gallery-hero-text">
+        <p style="font-size:10px;letter-spacing:4px;color:var(--oro);text-transform:uppercase;margin-bottom:8px;">Il Convivio Roma</p>
+        <h1>La <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--oro)">Galleria</em></h1>
+      </div>
+    </div>
+    <div class="gallery-grid">
+      <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200" alt="Restaurant" /><div class="gallery-item-overlay"><span>Il Ristorante</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600" alt="Cucina" /><div class="gallery-item-overlay"><span>La Cucina</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600" alt="Pizza" /><div class="gallery-item-overlay"><span>I Piatti</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=600" alt="Bar" /><div class="gallery-item-overlay"><span>Il Bar</span></div></div>
+      <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=1200" alt="Pasta" /><div class="gallery-item-overlay"><span>La Pasta</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600" alt="Vini" /><div class="gallery-item-overlay"><span>I Vini</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?w=600" alt="Dolci" /><div class="gallery-item-overlay"><span>I Dolci</span></div></div>
+    </div>
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="logo">Il Convivio</div><p>Authentische römische Küche seit 1962.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a href="#" onclick="showPage('home')">Home</a></li><li><a href="#" onclick="showPage('menu')">Speisekarte</a></li><li><a href="#" onclick="showPage('gallery')">Galerie</a></li><li><a href="#" onclick="showPage('contact')">Kontakt</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Mo–Fr 12–15 Uhr</a></li><li><a>Mo–Fr 19–23 Uhr</a></li><li><a>Sa–So 12–23 Uhr</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+39 06 123 456</a></li><li><a>Via della Croce 12</a></li><li><a>00187 Roma</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 Il Convivio Roma</p><p>Website von <span class="credit">MODEX</span></p></div>
+    </footer>
+  </div>
+
+  <!-- ===== CONTACT ===== -->
+  <div class="page" id="page-contact">
+    <div class="contact-hero">
+      <div class="contact-hero-text">
+        <p style="font-size:10px;letter-spacing:4px;color:var(--oro);text-transform:uppercase;margin-bottom:8px;">Il Convivio Roma</p>
+        <h1>Kontakt & <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--oro)">Reservierung</em></h1>
+      </div>
+    </div>
+    <div class="contact-content">
+      <div class="contact-info">
+        <h2>Wir freuen uns<br><em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--oro)">auf Sie</em></h2>
+        <div class="contact-detail"><div class="contact-detail-label">Adresse</div><div class="contact-detail-value">Via della Croce 12<br>00187 Roma, Italien<br>Nähe Piazza di Spagna</div></div>
+        <div class="contact-detail"><div class="contact-detail-label">Telefon</div><div class="contact-detail-value"><a href="tel:+390612345">+39 06 123 456</a></div></div>
+        <div class="contact-detail"><div class="contact-detail-label">E-Mail</div><div class="contact-detail-value"><a href="mailto:info@ilconvivio.it">info@ilconvivio.it</a></div></div>
+        <div class="contact-detail"><div class="contact-detail-label">Öffnungszeiten</div><div class="contact-detail-value">Montag: Geschlossen<br>Di–Fr: 12–15 & 19–23 Uhr<br>Sa–So: 12–23 Uhr durchgehend</div></div>
+      </div>
+      <div class="contact-form">
+        <h2>Tisch <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--oro)">reservieren</em></h2>
+        <div id="reservationForm">
+          <div class="form-row">
+            <div class="form-group"><label>Vorname</label><input type="text" placeholder="Marco" /></div>
+            <div class="form-group"><label>Nachname</label><input type="text" placeholder="Rossi" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>E-Mail</label><input type="email" placeholder="marco@email.com" /></div>
+            <div class="form-group"><label>Telefon</label><input type="tel" placeholder="+39 06 ..." /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Datum</label><input type="date" /></div>
+            <div class="form-group"><label>Uhrzeit</label><select><option>19:00</option><option>19:30</option><option>20:00</option><option>20:30</option><option>21:00</option><option>21:30</option><option>22:00</option></select></div>
+          </div>
+          <div class="form-group"><label>Anzahl Personen</label><select><option>1 Person</option><option>2 Personen</option><option>3 Personen</option><option>4 Personen</option><option>5–6 Personen</option><option>7–10 Personen</option><option>Mehr als 10</option></select></div>
+          <div class="form-group"><label>Besondere Wünsche</label><textarea placeholder="Allergien, besondere Anlässe, Sitzwünsche..."></textarea></div>
+          <button class="submit-btn" onclick="submitForm()">Reservierung anfragen</button>
+        </div>
+        <div class="form-success" id="formSuccess">
+          <h3>Grazie mille!</h3>
+          <p>Ihre Reservierungsanfrage ist eingegangen. Wir melden uns innerhalb von 24 Stunden bei Ihnen.</p>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="logo">Il Convivio</div><p>Authentische römische Küche seit 1962.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a href="#" onclick="showPage('home')">Home</a></li><li><a href="#" onclick="showPage('menu')">Speisekarte</a></li><li><a href="#" onclick="showPage('gallery')">Galerie</a></li><li><a href="#" onclick="showPage('contact')">Kontakt</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Mo–Fr 12–15 Uhr</a></li><li><a>Mo–Fr 19–23 Uhr</a></li><li><a>Sa–So 12–23 Uhr</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+39 06 123 456</a></li><li><a>Via della Croce 12</a></li><li><a>00187 Roma</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 Il Convivio Roma</p><p>Website von <span class="credit">MODEX</span></p></div>
+    </footer>
+  </div>
+
+  <script>
+    // PAGE NAVIGATION
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      initReveal();
+    }
+
+    // MENU TABS
+    function switchTab(tab) {
+      document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.menu-section').forEach(s => s.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    // FORM SUBMIT
+    function submitForm() {
+      document.getElementById('reservationForm').style.display = 'none';
+      document.getElementById('formSuccess').style.display = 'block';
+    }
+
+    // NAVBAR SCROLL
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // HERO BG ANIMATION
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const bg = document.getElementById('heroBg');
+        if (bg) bg.classList.add('loaded');
+      }, 100);
+    });
+
+    // SCROLL REVEAL
+    function initReveal() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+      }, { threshold: 0.15 });
+      document.querySelectorAll('.reveal').forEach(el => {
+        el.classList.remove('visible');
+        observer.observe(el);
+      });
+    }
+    initReveal();
+
+    // CUSTOM CURSOR
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx + 'px'; cursor.style.top = my + 'px'; });
+    function animRing() { rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12; ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; requestAnimationFrame(animRing); }
+    animRing();
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => { ring.style.transform = 'translate(-50%,-50%) scale(1.8)'; ring.style.borderColor = 'var(--oro)'; });
+      el.addEventListener('mouseleave', () => { ring.style.transform = 'translate(-50%,-50%) scale(1)'; ring.style.borderColor = 'rgba(184,151,90,0.5)'; });
+    });
+  </script>
+</body>
+</html>
