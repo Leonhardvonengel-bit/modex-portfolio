@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trattoria Toscana – Italienisches Restaurant München</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Josefin+Sans:wght@200;300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --nero: #0c0a08;
+      --verde: #2d5016;
+      --verde-light: #3d6b1f;
+      --crema: #f7f2e8;
+      --oro: #c9a84c;
+      --grigio: #1a1815;
+      --muted: #8a7d6e;
+      --border: rgba(201,168,76,0.2);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Josefin Sans', sans-serif; background: var(--nero); color: var(--crema); cursor: none; overflow-x: hidden; }
+
+    .cursor { position: fixed; width: 8px; height: 8px; background: var(--oro); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); }
+    .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid rgba(201,168,76,0.4); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.15s ease; }
+
+    nav { position: fixed; top: 0; width: 100%; z-index: 100; padding: 28px 60px; display: flex; justify-content: space-between; align-items: center; transition: all 0.4s; }
+    nav.scrolled { background: rgba(12,10,8,0.97); padding: 18px 60px; border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--oro); letter-spacing: 3px; font-weight: 400; font-style: italic; }
+    .nav-links { display: flex; gap: 40px; list-style: none; }
+    .nav-links a { color: rgba(247,242,232,0.6); text-decoration: none; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; transition: color 0.3s; font-weight: 300; }
+    .nav-links a:hover { color: var(--oro); }
+    .nav-reserve { padding: 10px 24px; border: 1px solid var(--oro); color: var(--oro); text-decoration: none; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; transition: all 0.3s; font-weight: 300; }
+    .nav-reserve:hover { background: var(--oro); color: var(--nero); }
+
+    .page { display: none; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* HOME */
+    .hero { height: 100vh; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .hero-bg { position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1800') center/cover; filter: brightness(0.25); }
+    .hero-overlay { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(12,10,8,0.3) 0%, rgba(12,10,8,0.85) 100%); }
+    .hero-content { position: relative; z-index: 2; text-align: center; padding: 0 20px; }
+    .hero-flag { display: flex; justify-content: center; gap: 3px; margin-bottom: 32px; opacity: 0; animation: fadeUp 0.8s 0.2s forwards; }
+    .hero-flag-stripe { width: 24px; height: 3px; }
+    .hero-eyebrow { font-size: 10px; letter-spacing: 6px; color: var(--oro); text-transform: uppercase; margin-bottom: 20px; opacity: 0; animation: fadeUp 0.8s 0.3s forwards; font-weight: 300; }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(52px, 8vw, 100px); font-weight: 300; line-height: 1; color: var(--crema); opacity: 0; animation: fadeUp 0.8s 0.5s forwards; }
+    .hero-title em { font-style: italic; color: var(--oro); }
+    .hero-location { font-size: 11px; letter-spacing: 5px; color: rgba(247,242,232,0.4); text-transform: uppercase; margin-top: 16px; margin-bottom: 48px; opacity: 0; animation: fadeUp 0.8s 0.7s forwards; font-weight: 300; }
+    .hero-cta { display: flex; gap: 20px; justify-content: center; opacity: 0; animation: fadeUp 0.8s 0.9s forwards; }
+    .btn-oro { padding: 16px 44px; background: var(--oro); color: var(--nero); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; font-weight: 400; transition: all 0.3s; font-family: 'Josefin Sans', sans-serif; }
+    .btn-oro:hover { background: #d4b07a; transform: translateY(-2px); }
+    .btn-outline { padding: 16px 44px; border: 1px solid rgba(247,242,232,0.3); color: var(--crema); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; transition: all 0.3s; font-family: 'Josefin Sans', sans-serif; font-weight: 300; }
+    .btn-outline:hover { border-color: var(--oro); color: var(--oro); }
+    .hero-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; padding: 32px 60px; border-top: 1px solid var(--border); }
+    .hero-bottom-item { text-align: center; }
+    .hero-bottom-label { font-size: 9px; letter-spacing: 3px; color: var(--oro); text-transform: uppercase; margin-bottom: 6px; font-weight: 300; }
+    .hero-bottom-value { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: rgba(247,242,232,0.7); font-style: italic; }
+
+    section { padding: 110px 60px; }
+    .label { font-size: 9px; letter-spacing: 5px; color: var(--oro); text-transform: uppercase; margin-bottom: 12px; font-weight: 300; }
+    .title { font-family: 'Cormorant Garamond', serif; font-size: clamp(38px, 4vw, 58px); font-weight: 300; line-height: 1.05; }
+    .title em { font-style: italic; color: var(--oro); }
+    .divider { width: 40px; height: 1px; background: var(--oro); margin: 20px 0 32px; }
+
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; max-width: 1200px; margin: 0 auto; }
+    .about-img { position: relative; }
+    .about-img img { width: 100%; height: 520px; object-fit: cover; filter: brightness(0.85); }
+    .about-img-overlay { position: absolute; inset: 0; background: linear-gradient(transparent 60%, rgba(12,10,8,0.6)); }
+    .about-badge { position: absolute; bottom: 32px; left: 32px; }
+    .about-badge-year { font-family: 'Cormorant Garamond', serif; font-size: 56px; color: var(--oro); line-height: 1; font-weight: 300; }
+    .about-badge-text { font-size: 9px; letter-spacing: 3px; color: var(--crema); text-transform: uppercase; font-weight: 300; }
+    .about-text p { font-size: 14px; color: var(--muted); line-height: 2; font-weight: 300; margin-bottom: 18px; }
+    .about-values { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 32px; }
+    .about-value { padding: 16px 20px; border: 1px solid var(--border); }
+    .about-value-label { font-size: 9px; letter-spacing: 3px; color: var(--oro); text-transform: uppercase; margin-bottom: 6px; font-weight: 300; }
+    .about-value-text { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; color: var(--crema); }
+
+    /* MENU */
+    .menu-hero { height: 40vh; background: url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1600') center/cover; position: relative; display: flex; align-items: flex-end; padding: 50px 60px; }
+    .menu-hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent, rgba(12,10,8,0.92)); }
+    .menu-hero-text { position: relative; }
+    .menu-hero-text h1 { font-family: 'Cormorant Garamond', serif; font-size: 64px; font-weight: 300; }
+    .menu-hero-text h1 em { font-style: italic; color: var(--oro); }
+
+    .menu-content { max-width: 900px; margin: 0 auto; padding: 80px 60px; }
+    .menu-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 60px; overflow-x: auto; }
+    .menu-tab { padding: 14px 28px; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.3s; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; font-family: 'Josefin Sans', sans-serif; font-weight: 300; white-space: nowrap; }
+    .menu-tab.active { color: var(--oro); border-bottom-color: var(--oro); }
+    .menu-section { display: none; }
+    .menu-section.active { display: block; }
+    .menu-cat-title { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 5px; color: var(--oro); text-transform: uppercase; margin-bottom: 28px; padding-bottom: 10px; border-bottom: 1px solid var(--border); font-style: italic; }
+    .menu-item { display: flex; justify-content: space-between; align-items: baseline; padding: 18px 0; border-bottom: 1px solid rgba(201,168,76,0.06); transition: padding 0.3s; }
+    .menu-item:hover { padding-left: 10px; }
+    .menu-item-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; margin-bottom: 3px; }
+    .menu-item-desc { font-size: 11px; color: var(--muted); font-style: italic; font-weight: 300; }
+    .menu-item-price { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--oro); margin-left: 20px; white-space: nowrap; }
+    .menu-spacer { height: 44px; }
+
+    /* KONTAKT */
+    .contact-hero { height: 40vh; background: url('https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=1600') center/cover; position: relative; display: flex; align-items: flex-end; padding: 50px 60px; }
+    .contact-hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent, rgba(12,10,8,0.92)); }
+    .contact-hero-text { position: relative; }
+    .contact-hero-text h1 { font-family: 'Cormorant Garamond', serif; font-size: 64px; font-weight: 300; }
+    .contact-hero-text h1 em { font-style: italic; color: var(--oro); }
+
+    .contact-content { max-width: 1100px; margin: 0 auto; padding: 80px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+    .contact-info h2 { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 300; margin-bottom: 36px; }
+    .contact-info h2 em { font-style: italic; color: var(--oro); }
+    .contact-block { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
+    .contact-block:last-child { border-bottom: none; }
+    .contact-block-label { font-size: 9px; letter-spacing: 4px; color: var(--oro); text-transform: uppercase; margin-bottom: 8px; font-weight: 300; }
+    .contact-block-value { font-size: 14px; color: rgba(247,242,232,0.7); line-height: 1.8; font-weight: 300; }
+    .contact-block-value a { color: var(--crema); text-decoration: none; transition: color 0.3s; }
+    .contact-block-value a:hover { color: var(--oro); }
+    .maps-btn { display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px; border: 1px solid var(--border); color: var(--oro); text-decoration: none; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s; margin-top: 4px; font-weight: 300; }
+    .maps-btn:hover { border-color: var(--oro); background: rgba(201,168,76,0.05); }
+
+    .contact-form h2 { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 300; margin-bottom: 36px; }
+    .contact-form h2 em { font-style: italic; color: var(--oro); }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 9px; letter-spacing: 3px; color: var(--oro); text-transform: uppercase; margin-bottom: 8px; font-weight: 300; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--crema); padding: 13px 16px; font-family: 'Josefin Sans', sans-serif; font-size: 13px; font-weight: 300; outline: none; transition: border-color 0.3s; -webkit-appearance: none; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--oro); }
+    .form-group textarea { height: 100px; resize: vertical; }
+    .form-group select option { background: var(--grigio); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .submit-btn { width: 100%; padding: 16px; background: var(--oro); color: var(--nero); font-family: 'Josefin Sans', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; font-weight: 400; border: none; cursor: pointer; transition: all 0.3s; margin-top: 8px; }
+    .submit-btn:hover { background: #d4b07a; }
+    .form-success { display: none; text-align: center; padding: 40px; border: 1px solid var(--oro); }
+    .form-success h3 { font-family: 'Cormorant Garamond', serif; font-size: 32px; color: var(--oro); margin-bottom: 10px; font-style: italic; }
+    .form-success p { color: var(--muted); font-size: 13px; font-weight: 300; }
+
+    footer { background: #060504; padding: 60px; border-top: 1px solid var(--border); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; }
+    .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 24px; color: var(--oro); letter-spacing: 3px; font-weight: 300; font-style: italic; margin-bottom: 12px; }
+    .footer-brand p { font-size: 12px; color: var(--muted); line-height: 1.8; font-weight: 300; max-width: 240px; }
+    .footer-col h4 { font-size: 9px; letter-spacing: 4px; color: var(--oro); text-transform: uppercase; margin-bottom: 20px; font-weight: 300; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 10px; }
+    .footer-col ul li a { color: var(--muted); text-decoration: none; font-size: 12px; font-weight: 300; transition: color 0.3s; cursor: pointer; letter-spacing: 1px; }
+    .footer-col ul li a:hover { color: var(--crema); }
+    .footer-bottom { max-width: 1200px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .footer-bottom p { font-size: 11px; color: var(--muted); font-weight: 300; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      nav { padding: 18px 24px; }
+      nav.scrolled { padding: 14px 24px; }
+      .nav-links { display: none; }
+      section { padding: 70px 24px; }
+      .about-grid { grid-template-columns: 1fr; gap: 40px; }
+      .about-values { grid-template-columns: 1fr; }
+      .menu-content { padding: 60px 24px; }
+      .contact-content { grid-template-columns: 1fr; gap: 40px; padding: 60px 24px; }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .footer-bottom { flex-direction: column; gap: 10px; }
+      footer { padding: 50px 24px; }
+      .hero-bottom { display: none; }
+      .menu-hero, .contact-hero { padding: 40px 24px; }
+      .menu-hero-text h1, .contact-hero-text h1 { font-size: 42px; }
+      .hero-cta { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <nav id="navbar">
+    <div class="nav-logo">Trattoria Toscana</div>
+    <ul class="nav-links">
+      <li><a href="#" onclick="showPage('home')">Home</a></li>
+      <li><a href="#" onclick="showPage('menu')">Speisekarte</a></li>
+      <li><a href="#" onclick="showPage('contact')">Reservierung</a></li>
+    </ul>
+    <a href="#" class="nav-reserve" onclick="showPage('contact')">Tisch reservieren</a>
+  </nav>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-flag">
+          <div class="hero-flag-stripe" style="background:#009246;"></div>
+          <div class="hero-flag-stripe" style="background:#ffffff;"></div>
+          <div class="hero-flag-stripe" style="background:#ce2b37;"></div>
+        </div>
+        <p class="hero-eyebrow">Cucina Italiana · München Schwabing</p>
+        <h1 class="hero-title">Trattoria<br><em>Toscana</em></h1>
+        <p class="hero-location">Authentische Toskana-Küche seit 1998</p>
+        <div class="hero-cta">
+          <a href="#" class="btn-oro" onclick="showPage('menu')">Zur Speisekarte</a>
+          <a href="#" class="btn-outline" onclick="showPage('contact')">Tisch reservieren</a>
+        </div>
+      </div>
+      <div class="hero-bottom">
+        <div class="hero-bottom-item"><div class="hero-bottom-label">Adresse</div><div class="hero-bottom-value">Leopoldstr. 88, München</div></div>
+        <div class="hero-bottom-item"><div class="hero-bottom-label">Öffnungszeiten</div><div class="hero-bottom-value">Di–So, 12–23 Uhr</div></div>
+        <div class="hero-bottom-item"><div class="hero-bottom-label">Reservierung</div><div class="hero-bottom-value">+49 89 456 789</div></div>
+      </div>
+    </section>
+
+    <section style="background:var(--nero);">
+      <div class="about-grid">
+        <div class="about-img reveal">
+          <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800" alt="Trattoria Toscana"/>
+          <div class="about-img-overlay"></div>
+          <div class="about-badge">
+            <div class="about-badge-year">1998</div>
+            <div class="about-badge-text">Seit München liebt</div>
+          </div>
+        </div>
+        <div class="about-text reveal">
+          <p class="label">La Nostra Storia</p>
+          <h2 class="title">Ein Stück <em>Toskana</em><br>in München</h2>
+          <div class="divider"></div>
+          <p>Als Familie Rossi 1998 aus Florenz nach München zog, brachten sie ihre wichtigste Mitgift mit — die Rezepte der Nonna. Seitdem verwöhnen wir unsere Gäste mit der ehrlichen, herzlichen Küche der Toskana.</p>
+          <p>Keine Kompromisse bei den Zutaten. Kein Aufwand bei der Gastfreundschaft. Nur echte toskanische Küche — mitten in Schwabing.</p>
+          <div class="about-values">
+            <div class="about-value"><div class="about-value-label">Herkunft</div><div class="about-value-text">Florenz, Toscana</div></div>
+            <div class="about-value"><div class="about-value-label">Spezialität</div><div class="about-value-text">Bistecca & Pasta</div></div>
+            <div class="about-value"><div class="about-value-label">Weine</div><div class="about-value-text">Direkt vom Weingut</div></div>
+            <div class="about-value"><div class="about-value-label">Atmosphäre</div><div class="about-value-text">Familiär & elegant</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="footer-logo">Trattoria Toscana</div><p>Authentische toskanische Küche seit 1998 im Herzen Münchens.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a onclick="showPage('home')">Home</a></li><li><a onclick="showPage('menu')">Speisekarte</a></li><li><a onclick="showPage('contact')">Reservierung</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Montag: Geschlossen</a></li><li><a>Di–Fr: 12–15 & 18–23</a></li><li><a>Sa–So: 12–23 Uhr</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+49 89 456 789</a></li><li><a>Leopoldstr. 88</a></li><li><a>80802 München</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 Trattoria Toscana München</p><p style="color:var(--oro);">Website von <strong>MODEX</strong></p></div>
+    </footer>
+  </div>
+
+  <!-- MENU -->
+  <div class="page" id="page-menu">
+    <div class="menu-hero">
+      <div class="menu-hero-text">
+        <p style="font-size:9px;letter-spacing:5px;color:var(--oro);text-transform:uppercase;margin-bottom:8px;font-weight:300;">Trattoria Toscana</p>
+        <h1>La <em>Carta</em></h1>
+      </div>
+    </div>
+    <div class="menu-content">
+      <div class="menu-tabs">
+        <button class="menu-tab active" onclick="switchTab('antipasti', event)">Antipasti</button>
+        <button class="menu-tab" onclick="switchTab('primi', event)">Primi</button>
+        <button class="menu-tab" onclick="switchTab('secondi', event)">Secondi</button>
+        <button class="menu-tab" onclick="switchTab('dolci', event)">Dolci</button>
+        <button class="menu-tab" onclick="switchTab('vini', event)">Vini</button>
+      </div>
+
+      <div class="menu-section active" id="tab-antipasti">
+        <p class="menu-cat-title">Antipasti della Casa</p>
+        <div class="menu-item"><div><div class="menu-item-name">Bruschetta Toscana</div><div class="menu-item-desc">Geröstetes Toskanapano, weiße Bohnen, Olivenöl, Salbei</div></div><div class="menu-item-price">8 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Tagliere di Salumi</div><div class="menu-item-desc">Auswahl toskanischer Wurst- und Käsespezialitäten</div></div><div class="menu-item-price">18 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Carpaccio di Chianina</div><div class="menu-item-desc">Hauchdünnes Chianina-Rind, Rucola, Parmigiano, Trüffelöl</div></div><div class="menu-item-price">16 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Crostini di Fegatini</div><div class="menu-item-desc">Florentiner Hühnerleberpaste auf geröstetem Brot — Nonnas Rezept</div></div><div class="menu-item-price">10 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Burrata con Pomodorini</div><div class="menu-item-desc">Cremige Burrata, Kirschtomaten, Basilikumöl, Meersalz</div></div><div class="menu-item-price">14 €</div></div>
+      </div>
+
+      <div class="menu-section" id="tab-primi">
+        <p class="menu-cat-title">Paste Fresche della Nonna</p>
+        <div class="menu-item"><div><div class="menu-item-name">Pappardelle al Cinghiale</div><div class="menu-item-desc">Breite Pasta mit langsam geschmortem Wildschwein-Ragù</div></div><div class="menu-item-price">22 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Ribollita</div><div class="menu-item-desc">Toskanische Bauernsuppe mit Cavolo Nero, Bohnen, Brot</div></div><div class="menu-item-price">14 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Pici all'Aglione</div><div class="menu-item-desc">Dickere Pasta mit toskanischer Knoblauch-Tomatensauce</div></div><div class="menu-item-price">17 €</div></div>
+        <div class="menu-spacer"></div>
+        <p class="menu-cat-title">Risotti</p>
+        <div class="menu-item"><div><div class="menu-item-name">Risotto al Tartufo Nero</div><div class="menu-item-desc">Carnaroli Reis mit schwarzem Trüffel aus der Toskana</div></div><div class="menu-item-price">28 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Risotto ai Funghi Porcini</div><div class="menu-item-desc">Frische Steinpilze, Butter, Parmigiano Reggiano 24 Monate</div></div><div class="menu-item-price">24 €</div></div>
+      </div>
+
+      <div class="menu-section" id="tab-secondi">
+        <p class="menu-cat-title">Dalla Griglia</p>
+        <div class="menu-item"><div><div class="menu-item-name">Bistecca alla Fiorentina</div><div class="menu-item-desc">600g Chianina T-Bone, Rosmarinöl, Meerssalzflocken — für 2 Personen</div></div><div class="menu-item-price">68 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Tagliata di Manzo</div><div class="menu-item-desc">Aufgeschnittenes Rindersteak, Rucola, Parmigiano, Balsamico</div></div><div class="menu-item-price">34 €</div></div>
+        <div class="menu-spacer"></div>
+        <p class="menu-cat-title">Secondi Piatti</p>
+        <div class="menu-item"><div><div class="menu-item-name">Arista di Maiale</div><div class="menu-item-desc">Toskanischer Schweinebraten mit Rosmarin, Knoblauch, weißen Bohnen</div></div><div class="menu-item-price">26 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Branzino al Cartoccio</div><div class="menu-item-desc">Wolfsbarsch in der Folie gegart, Kapern, Oliven, Zitrone</div></div><div class="menu-item-price">32 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Pollo alla Cacciatora</div><div class="menu-item-desc">Hähnchen nach Jägerart, Tomaten, Oliven, Rosmarin, Weißwein</div></div><div class="menu-item-price">24 €</div></div>
+      </div>
+
+      <div class="menu-section" id="tab-dolci">
+        <p class="menu-cat-title">I Dolci</p>
+        <div class="menu-item"><div><div class="menu-item-name">Cantucci e Vin Santo</div><div class="menu-item-desc">Toskanische Mandelkekse mit Vin Santo zum Dippen — ein Klassiker</div></div><div class="menu-item-price">9 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Panna Cotta al Miele</div><div class="menu-item-desc">Mit toskanischem Wildblütenhonig und frischen Feigen</div></div><div class="menu-item-price">8 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Tiramisù della Nonna</div><div class="menu-item-desc">Hausgemacht nach Originalrezept — unverändert seit 1998</div></div><div class="menu-item-price">9 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Torta della Nonna</div><div class="menu-item-desc">Mürbeteig, Vanillecreme, Pinienkerne, Puderzucker</div></div><div class="menu-item-price">8 €</div></div>
+      </div>
+
+      <div class="menu-section" id="tab-vini">
+        <p class="menu-cat-title">Vini Rossi Toscani</p>
+        <div class="menu-item"><div><div class="menu-item-name">Chianti Classico DOCG</div><div class="menu-item-desc">Castello di Ama · Gaiole in Chianti · Kirsche, Tabak, Würze</div></div><div class="menu-item-price">38 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Brunello di Montalcino DOCG</div><div class="menu-item-desc">Biondi Santi · Montalcino · Komplex, tiefgründig, langanhaltend</div></div><div class="menu-item-price">115 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Bolgheri Sassicaia DOC</div><div class="menu-item-desc">Tenuta San Guido · Cabernet Sauvignon · Legendärer Supertoskaner</div></div><div class="menu-item-price">180 €</div></div>
+        <div class="menu-spacer"></div>
+        <p class="menu-cat-title">Vini Bianchi</p>
+        <div class="menu-item"><div><div class="menu-item-name">Vernaccia di San Gimignano</div><div class="menu-item-desc">Teruzzi · San Gimignano · Frisch, mineralisch, leicht mandelwürzig</div></div><div class="menu-item-price">32 €</div></div>
+        <div class="menu-item"><div><div class="menu-item-name">Vermentino di Toscana</div><div class="menu-item-desc">Brancaia · Toskana · Zitrusfrisch, floral, elegant</div></div><div class="menu-item-price">28 €</div></div>
+      </div>
+    </div>
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="footer-logo">Trattoria Toscana</div><p>Authentische toskanische Küche seit 1998.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a onclick="showPage('home')">Home</a></li><li><a onclick="showPage('menu')">Speisekarte</a></li><li><a onclick="showPage('contact')">Reservierung</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Montag: Geschlossen</a></li><li><a>Di–Fr: 12–15 & 18–23</a></li><li><a>Sa–So: 12–23 Uhr</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+49 89 456 789</a></li><li><a>Leopoldstr. 88, München</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 Trattoria Toscana München</p><p style="color:var(--oro);">Website von <strong>MODEX</strong></p></div>
+    </footer>
+  </div>
+
+  <!-- KONTAKT -->
+  <div class="page" id="page-contact">
+    <div class="contact-hero">
+      <div class="contact-hero-text">
+        <p style="font-size:9px;letter-spacing:5px;color:var(--oro);text-transform:uppercase;margin-bottom:8px;font-weight:300;">Trattoria Toscana</p>
+        <h1>Tisch <em>reservieren</em></h1>
+      </div>
+    </div>
+    <div class="contact-content">
+      <div class="contact-info">
+        <h2>Wir freuen<br>uns auf <em>Sie</em></h2>
+        <div class="contact-block"><div class="contact-block-label">Adresse</div><div class="contact-block-value">Leopoldstraße 88<br>80802 München Schwabing<br>U-Bahn: Münchner Freiheit</div></div>
+        <div class="contact-block"><div class="contact-block-label">Telefon</div><div class="contact-block-value"><a href="tel:+4989456789">+49 89 456 789</a></div></div>
+        <div class="contact-block"><div class="contact-block-label">E-Mail</div><div class="contact-block-value"><a href="mailto:info@trattoria-toscana-muenchen.de">info@trattoria-toscana-muenchen.de</a></div></div>
+        <div class="contact-block"><div class="contact-block-label">Öffnungszeiten</div><div class="contact-block-value">Montag geschlossen<br>Di–Fr: 12–15 & 18–23 Uhr<br>Sa–So: 12–23 Uhr durchgehend</div></div>
+        <div class="contact-block">
+          <div class="contact-block-label">Standort</div>
+          <a href="https://maps.google.com/?q=Leopoldstrasse+88+80802+München" target="_blank" class="maps-btn">📍 Auf Google Maps öffnen</a>
+        </div>
+      </div>
+      <div class="contact-form">
+        <h2>Ihre <em>Reservierung</em></h2>
+        <div id="reservationForm">
+          <div class="form-row">
+            <div class="form-group"><label>Vorname</label><input type="text" placeholder="Hans"/></div>
+            <div class="form-group"><label>Nachname</label><input type="text" placeholder="Müller"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Telefon</label><input type="tel" placeholder="+49 ..."/></div>
+            <div class="form-group"><label>E-Mail</label><input type="email" placeholder="hans@email.de"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Datum</label><input type="date"/></div>
+            <div class="form-group"><label>Uhrzeit</label>
+              <select><option>12:00</option><option>12:30</option><option>13:00</option><option>18:00</option><option>18:30</option><option>19:00</option><option>19:30</option><option>20:00</option><option>20:30</option><option>21:00</option></select>
+            </div>
+          </div>
+          <div class="form-group"><label>Anzahl Personen</label>
+            <select><option>2 Personen</option><option>3 Personen</option><option>4 Personen</option><option>5–6 Personen</option><option>7–10 Personen</option><option>Mehr als 10</option></select>
+          </div>
+          <div class="form-group"><label>Besondere Wünsche</label><textarea placeholder="Allergien, besondere Anlässe, Sitzwünsche..."></textarea></div>
+          <button class="submit-btn" onclick="submitReservation()">Reservierung anfragen</button>
+        </div>
+        <div class="form-success" id="reservationSuccess">
+          <h3>Grazie mille!</h3>
+          <p>Ihre Reservierungsanfrage ist eingegangen. Wir melden uns innerhalb von 24 Stunden.</p>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="footer-logo">Trattoria Toscana</div><p>Authentische toskanische Küche seit 1998.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a onclick="showPage('home')">Home</a></li><li><a onclick="showPage('menu')">Speisekarte</a></li><li><a onclick="showPage('contact')">Reservierung</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Montag: Geschlossen</a></li><li><a>Di–Fr: 12–15 & 18–23</a></li><li><a>Sa–So: 12–23 Uhr</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+49 89 456 789</a></li><li><a>Leopoldstr. 88, München</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 Trattoria Toscana München</p><p style="color:var(--oro);">Website von <strong>MODEX</strong></p></div>
+    </footer>
+  </div>
+
+  <script>
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(initReveal, 100);
+    }
+    function switchTab(tab, e) {
+      document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.menu-section').forEach(s => s.classList.remove('active'));
+      e.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
+    function submitReservation() {
+      document.getElementById('reservationForm').style.display = 'none';
+      document.getElementById('reservationSuccess').style.display = 'block';
+    }
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+    });
+    function initReveal() {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.reveal').forEach(el => { el.classList.remove('visible'); obs.observe(el); });
+    }
+    initReveal();
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx+'px'; cursor.style.top = my+'px'; });
+    function animRing() { rx += (mx-rx)*0.12; ry += (my-ry)*0.12; ring.style.left = rx+'px'; ring.style.top = ry+'px'; requestAnimationFrame(animRing); }
+    animRing();
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => { ring.style.transform='translate(-50%,-50%) scale(2)'; ring.style.borderColor='var(--oro)'; });
+      el.addEventListener('mouseleave', () => { ring.style.transform='translate(-50%,-50%) scale(1)'; ring.style.borderColor='rgba(201,168,76,0.4)'; });
+    });
+  </script>
+</body>
+</html>

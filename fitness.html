@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APEX Gym – Fitnessstudio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --black: #080808;
+      --red: #e8192c;
+      --red-dark: #c0141f;
+      --white: #f8f8f8;
+      --gray: #111111;
+      --muted: #666;
+      --border: rgba(232,25,44,0.2);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--black); color: var(--white); cursor: none; overflow-x: hidden; }
+
+    .cursor { position: fixed; width: 8px; height: 8px; background: var(--red); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); }
+    .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid rgba(232,25,44,0.5); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.15s ease; }
+
+    nav { position: fixed; top: 0; width: 100%; z-index: 100; padding: 24px 60px; display: flex; justify-content: space-between; align-items: center; transition: all 0.4s; }
+    nav.scrolled { background: rgba(8,8,8,0.97); padding: 16px 60px; border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 6px; color: var(--white); }
+    .nav-logo span { color: var(--red); }
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a { color: rgba(248,248,248,0.5); text-decoration: none; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; transition: color 0.3s; }
+    .nav-links a:hover { color: var(--red); }
+    .nav-cta { padding: 12px 28px; background: var(--red); color: var(--white); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; font-weight: 500; transition: all 0.3s; }
+    .nav-cta:hover { background: var(--red-dark); transform: translateY(-1px); }
+
+    .page { display: none; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* HOME */
+    .hero { height: 100vh; position: relative; display: flex; align-items: center; overflow: hidden; }
+    .hero-bg { position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1800') center/cover; filter: brightness(0.25); }
+    .hero-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,8,8,0.95) 40%, transparent 100%); }
+    .hero-accent { position: absolute; right: 0; top: 0; bottom: 0; width: 4px; background: var(--red); }
+    .hero-content { position: relative; z-index: 2; padding: 0 60px; max-width: 900px; }
+    .hero-tag { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 24px; opacity: 0; animation: fadeUp 0.8s 0.2s forwards; }
+    .hero-tag-line { width: 40px; height: 2px; background: var(--red); }
+    .hero-tag span { font-size: 10px; letter-spacing: 5px; color: var(--red); text-transform: uppercase; }
+    .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(80px, 13vw, 160px); line-height: 0.88; letter-spacing: 2px; opacity: 0; animation: fadeUp 0.8s 0.4s forwards; }
+    .hero-title .outline { -webkit-text-stroke: 1px rgba(248,248,248,0.3); color: transparent; }
+    .hero-title .red { color: var(--red); }
+    .hero-sub { font-size: 15px; color: rgba(248,248,248,0.45); margin-top: 24px; margin-bottom: 40px; font-weight: 300; line-height: 1.7; max-width: 480px; opacity: 0; animation: fadeUp 0.8s 0.6s forwards; }
+    .hero-cta { display: flex; gap: 16px; opacity: 0; animation: fadeUp 0.8s 0.8s forwards; }
+    .btn-red { padding: 16px 40px; background: var(--red); color: var(--white); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; font-weight: 500; transition: all 0.3s; }
+    .btn-red:hover { background: var(--red-dark); transform: translateY(-2px); }
+    .btn-ghost { padding: 16px 40px; border: 1px solid rgba(248,248,248,0.2); color: var(--white); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; transition: all 0.3s; }
+    .btn-ghost:hover { border-color: var(--red); color: var(--red); }
+
+    .stats-bar { background: var(--red); padding: 24px 60px; display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 20px; }
+    .stat-item { text-align: center; }
+    .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--white); letter-spacing: 2px; line-height: 1; }
+    .stat-label { font-size: 10px; letter-spacing: 2px; color: rgba(248,248,248,0.7); text-transform: uppercase; margin-top: 4px; }
+
+    section { padding: 100px 60px; }
+    .label { font-size: 9px; letter-spacing: 5px; color: var(--red); text-transform: uppercase; margin-bottom: 12px; }
+    .title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(42px, 5vw, 68px); letter-spacing: 2px; line-height: 1; }
+    .title .red { color: var(--red); }
+    .title .outline { -webkit-text-stroke: 1px rgba(248,248,248,0.25); color: transparent; }
+
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; max-width: 1200px; margin: 0 auto; }
+    .about-img { position: relative; }
+    .about-img img { width: 100%; height: 540px; object-fit: cover; filter: brightness(0.8); }
+    .about-img-tag { position: absolute; top: 24px; left: -12px; background: var(--red); padding: 14px 20px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 3px; color: var(--white); }
+    .about-text p { font-size: 15px; color: var(--muted); line-height: 1.9; font-weight: 300; margin-bottom: 18px; margin-top: 24px; }
+    .features-list { margin-top: 32px; display: flex; flex-direction: column; gap: 12px; }
+    .feature-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border: 1px solid var(--border); transition: border-color 0.3s; }
+    .feature-item:hover { border-color: var(--red); }
+    .feature-icon { font-size: 20px; }
+    .feature-text { font-size: 13px; color: var(--white); letter-spacing: 1px; }
+
+    .courses { background: var(--gray); }
+    .courses-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; max-width: 1200px; margin: 60px auto 0; }
+    .course { background: #161616; padding: 40px 32px; transition: background 0.3s; position: relative; overflow: hidden; }
+    .course::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--red); transform: scaleX(0); transition: transform 0.3s; }
+    .course:hover::after { transform: scaleX(1); }
+    .course:hover { background: #1a1a1a; }
+    .course-time { font-size: 10px; letter-spacing: 3px; color: var(--red); text-transform: uppercase; margin-bottom: 12px; }
+    .course-name { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; margin-bottom: 10px; }
+    .course-desc { font-size: 13px; color: var(--muted); line-height: 1.7; font-weight: 300; margin-bottom: 20px; }
+    .course-trainer { font-size: 11px; color: rgba(248,248,248,0.4); letter-spacing: 1px; }
+
+    .pricing { background: var(--black); }
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; max-width: 1000px; margin: 60px auto 0; }
+    .price-card { background: var(--gray); padding: 44px 36px; text-align: center; position: relative; transition: background 0.3s; }
+    .price-card.featured { background: var(--red); }
+    .price-card.featured .price-label, .price-card.featured .price-desc, .price-card.featured .price-feature { color: rgba(248,248,248,0.8); }
+    .price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--white); color: var(--red); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; padding: 4px 14px; font-weight: 500; white-space: nowrap; }
+    .price-label { font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 16px; }
+    .price-amount { font-family: 'Bebas Neue', sans-serif; font-size: 64px; color: var(--white); line-height: 1; letter-spacing: 2px; }
+    .price-period { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+    .price-features { list-style: none; margin-bottom: 32px; }
+    .price-feature { font-size: 13px; color: var(--muted); padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 300; }
+    .price-btn { display: block; padding: 14px; background: var(--red); color: var(--white); text-decoration: none; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 500; transition: all 0.3s; }
+    .price-card.featured .price-btn { background: var(--white); color: var(--red); }
+    .price-btn:hover { opacity: 0.85; }
+
+    /* KONTAKT */
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; max-width: 1200px; margin: 60px auto 0; align-items: start; }
+    .contact-info p { font-size: 15px; color: var(--muted); line-height: 1.9; font-weight: 300; margin-bottom: 40px; }
+    .contact-details { display: flex; flex-direction: column; gap: 16px; }
+    .contact-detail { display: flex; align-items: center; gap: 16px; padding: 20px 24px; border: 1px solid var(--border); }
+    .contact-detail-icon { font-size: 20px; }
+    .contact-detail-label { font-size: 9px; letter-spacing: 3px; color: var(--red); text-transform: uppercase; margin-bottom: 4px; }
+    .contact-detail-value { font-size: 14px; color: var(--white); font-weight: 300; }
+    .contact-detail-value a { color: var(--white); text-decoration: none; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 9px; letter-spacing: 3px; color: var(--red); text-transform: uppercase; margin-bottom: 8px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; background: var(--gray); border: 1px solid var(--border); color: var(--white); padding: 14px 16px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 300; outline: none; transition: border-color 0.3s; -webkit-appearance: none; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--red); }
+    .form-group select option { background: var(--gray); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .submit-btn { width: 100%; padding: 18px; background: var(--red); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 500; border: none; cursor: pointer; transition: all 0.3s; }
+    .submit-btn:hover { background: var(--red-dark); }
+    .form-success { display: none; text-align: center; padding: 40px; border: 1px solid var(--red); }
+    .form-success h3 { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--red); letter-spacing: 2px; margin-bottom: 10px; }
+    .form-success p { color: var(--muted); font-size: 13px; }
+
+    footer { background: #050505; padding: 60px; border-top: 1px solid var(--border); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; }
+    .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 6px; margin-bottom: 12px; }
+    .footer-logo span { color: var(--red); }
+    .footer-brand p { font-size: 12px; color: var(--muted); line-height: 1.8; font-weight: 300; max-width: 220px; }
+    .footer-col h4 { font-size: 9px; letter-spacing: 4px; color: var(--red); text-transform: uppercase; margin-bottom: 20px; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 10px; }
+    .footer-col ul li a { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 300; transition: color 0.3s; cursor: pointer; }
+    .footer-col ul li a:hover { color: var(--white); }
+    .footer-bottom { max-width: 1200px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .footer-bottom p { font-size: 11px; color: var(--muted); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      nav { padding: 18px 24px; }
+      nav.scrolled { padding: 14px 24px; }
+      .nav-links { display: none; }
+      section { padding: 70px 24px; }
+      .about-grid { grid-template-columns: 1fr; gap: 40px; }
+      .courses-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; gap: 40px; }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .footer-bottom { flex-direction: column; gap: 10px; }
+      footer { padding: 50px 24px; }
+      .stats-bar { padding: 20px 24px; }
+      .hero-cta { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <nav id="navbar">
+    <div class="nav-logo">APEX<span>.</span></div>
+    <ul class="nav-links">
+      <li><a href="#" onclick="showPage('home')">Home</a></li>
+      <li><a href="#" onclick="showPage('courses')">Kurse</a></li>
+      <li><a href="#" onclick="showPage('pricing')">Mitgliedschaft</a></li>
+      <li><a href="#" onclick="showPage('contact')">Kontakt</a></li>
+    </ul>
+    <a href="#" class="nav-cta" onclick="showPage('contact')">Probetraining</a>
+  </nav>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-accent"></div>
+      <div class="hero-content">
+        <div class="hero-tag"><div class="hero-tag-line"></div><span>München · Seit 2019</span></div>
+        <h1 class="hero-title">PUSH<br><span class="outline">YOUR</span><br><span class="red">LIMITS.</span></h1>
+        <p class="hero-sub">APEX ist mehr als ein Gym. Es ist eine Community die dich täglich über sich hinauswachsen lässt.</p>
+        <div class="hero-cta">
+          <a href="#" class="btn-red" onclick="showPage('contact')">Gratis Probetraining</a>
+          <a href="#" class="btn-ghost" onclick="showPage('pricing')">Mitgliedschaft</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-num">1200+</div><div class="stat-label">Mitglieder</div></div>
+      <div class="stat-item"><div class="stat-num">25+</div><div class="stat-label">Kurse pro Woche</div></div>
+      <div class="stat-item"><div class="stat-num">15</div><div class="stat-label">Trainer</div></div>
+      <div class="stat-item"><div class="stat-num">800m²</div><div class="stat-label">Trainingsfläche</div></div>
+      <div class="stat-item"><div class="stat-num">24/7</div><div class="stat-label">Geöffnet</div></div>
+    </div>
+
+    <section style="background: var(--black);">
+      <div class="about-grid">
+        <div class="about-img reveal">
+          <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800" alt="APEX Gym"/>
+          <div class="about-img-tag">EST. 2019</div>
+        </div>
+        <div class="about-text reveal">
+          <p class="label">Über APEX</p>
+          <h2 class="title">MEHR ALS<br>NUR EIN <span class="red">GYM.</span></h2>
+          <p>APEX wurde 2019 mit einer klaren Vision gegründet: Ein Ort wo Leistung auf Community trifft. Keine leeren Versprechen — nur echte Ergebnisse.</p>
+          <p>Mit über 800m² Trainingsfläche, modernsten Geräten und einem Team aus zertifizierten Trainern bist du bei uns in den besten Händen.</p>
+          <div class="features-list">
+            <div class="feature-item"><div class="feature-icon">🏋️</div><div class="feature-text">Modernste Geräte & freie Gewichte</div></div>
+            <div class="feature-item"><div class="feature-icon">👥</div><div class="feature-text">Über 25 Gruppenkurse pro Woche</div></div>
+            <div class="feature-item"><div class="feature-icon">🥤</div><div class="feature-text">Protein-Bar & Sauna inklusive</div></div>
+            <div class="feature-item"><div class="feature-icon">📱</div><div class="feature-text">App für Kursanmeldung & Tracking</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="footer-logo">APEX<span>.</span></div><p>München's härtestes und herzlichstes Gym seit 2019.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a onclick="showPage('home')">Home</a></li><li><a onclick="showPage('courses')">Kurse</a></li><li><a onclick="showPage('pricing')">Mitgliedschaft</a></li><li><a onclick="showPage('contact')">Kontakt</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Mo–Fr: 6–23 Uhr</a></li><li><a>Sa–So: 8–21 Uhr</a></li><li><a style="color:var(--red)">24/7 mit Chip-Karte</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+49 89 123 456</a></li><li><a>Leopoldstr. 42</a></li><li><a>80802 München</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 APEX Gym München</p><p style="color:var(--red);">Website von <strong>MODEX</strong></p></div>
+    </footer>
+  </div>
+
+  <!-- KURSE -->
+  <div class="page" id="page-courses">
+    <section class="courses" style="padding-top:140px;">
+      <div style="max-width:1200px;margin:0 auto;">
+        <p class="label reveal">Wöchentliches Programm</p>
+        <h2 class="title reveal">UNSERE <span class="red">KURSE.</span></h2>
+      </div>
+      <div class="courses-grid">
+        <div class="course reveal"><div class="course-time">Mo / Mi / Fr · 7:00</div><div class="course-name">HIIT POWER</div><div class="course-desc">Hochintensives Intervalltraining für maximalen Kalorienverbrauch. 45 Minuten die alles geben.</div><div class="course-trainer">Trainer: Alex Müller</div></div>
+        <div class="course reveal"><div class="course-time">Di / Do · 18:30</div><div class="course-name">BOXING BASICS</div><div class="course-desc">Kampfsport trifft Cardio. Kein Sparring — nur Technik, Ausdauer und maximaler Spaß.</div><div class="course-trainer">Trainer: Marco Silva</div></div>
+        <div class="course reveal"><div class="course-time">Mo / Do · 19:00</div><div class="course-name">YOGA & MOBILITY</div><div class="course-desc">Regeneration und Beweglichkeit für einen ausgeglichenen Körper. Perfekt nach hartem Training.</div><div class="course-trainer">Trainerin: Lisa Kern</div></div>
+        <div class="course reveal"><div class="course-time">Sa · 10:00</div><div class="course-name">CROSSFIT WOD</div><div class="course-desc">Workout of the Day — jede Woche anders, immer intensiv. Für Fortgeschrittene.</div><div class="course-trainer">Trainer: Tom Wagner</div></div>
+        <div class="course reveal"><div class="course-time">Mi / Fr · 12:00</div><div class="course-name">LUNCH BURN</div><div class="course-desc">30 Minuten in der Mittagspause. Kompakt, effektiv, schweißtreibend.</div><div class="course-trainer">Trainer: Alex Müller</div></div>
+        <div class="course reveal"><div class="course-time">So · 11:00</div><div class="course-name">BODY PUMP</div><div class="course-desc">Kraftausdauer mit der Langhantel. Definiere deinen Körper in 60 Minuten.</div><div class="course-trainer">Trainerin: Nina Bauer</div></div>
+      </div>
+    </section>
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="footer-logo">APEX<span>.</span></div><p>München's härtestes und herzlichstes Gym seit 2019.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a onclick="showPage('home')">Home</a></li><li><a onclick="showPage('courses')">Kurse</a></li><li><a onclick="showPage('pricing')">Mitgliedschaft</a></li><li><a onclick="showPage('contact')">Kontakt</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Mo–Fr: 6–23 Uhr</a></li><li><a>Sa–So: 8–21 Uhr</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+49 89 123 456</a></li><li><a>Leopoldstr. 42, München</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 APEX Gym München</p><p style="color:var(--red);">Website von <strong>MODEX</strong></p></div>
+    </footer>
+  </div>
+
+  <!-- PREISE -->
+  <div class="page" id="page-pricing">
+    <section class="pricing" style="padding-top:140px;">
+      <div style="max-width:1200px;margin:0 auto;text-align:center;">
+        <p class="label reveal">Kein Risiko</p>
+        <h2 class="title reveal">DEINE <span class="red">MITGLIEDSCHAFT.</span></h2>
+        <p style="font-size:14px;color:var(--muted);margin-top:16px;font-weight:300;" class="reveal">Alle Pakete inkl. Kurse, Sauna und Protein-Bar. Monatlich kündbar.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="price-card reveal">
+          <div class="price-label">Starter</div>
+          <div class="price-amount">29</div>
+          <div class="price-period">€ / Monat</div>
+          <ul class="price-features">
+            <li class="price-feature">Gerätebereich unbegrenzt</li>
+            <li class="price-feature">2 Kurse pro Woche</li>
+            <li class="price-feature">Umkleiden & Duschen</li>
+            <li class="price-feature">Mo–Fr Zugang</li>
+          </ul>
+          <a href="#" class="price-btn" onclick="showPage('contact')">Jetzt starten</a>
+        </div>
+        <div class="price-card featured reveal">
+          <div class="price-badge">Beliebteste Wahl</div>
+          <div class="price-label">Premium</div>
+          <div class="price-amount">49</div>
+          <div class="price-period">€ / Monat</div>
+          <ul class="price-features">
+            <li class="price-feature">Alles aus Starter</li>
+            <li class="price-feature">Unbegrenzte Kurse</li>
+            <li class="price-feature">Sauna inklusive</li>
+            <li class="price-feature">7 Tage Zugang</li>
+          </ul>
+          <a href="#" class="price-btn" onclick="showPage('contact')">Jetzt starten</a>
+        </div>
+        <div class="price-card reveal">
+          <div class="price-label">Elite</div>
+          <div class="price-amount">79</div>
+          <div class="price-period">€ / Monat</div>
+          <ul class="price-features">
+            <li class="price-feature">Alles aus Premium</li>
+            <li class="price-feature">Personal Training 2x/Mo.</li>
+            <li class="price-feature">Ernährungsplan</li>
+            <li class="price-feature">24/7 Chip-Zugang</li>
+          </ul>
+          <a href="#" class="price-btn" onclick="showPage('contact')">Jetzt starten</a>
+        </div>
+      </div>
+    </section>
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="footer-logo">APEX<span>.</span></div><p>München's härtestes und herzlichstes Gym seit 2019.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a onclick="showPage('home')">Home</a></li><li><a onclick="showPage('courses')">Kurse</a></li><li><a onclick="showPage('pricing')">Mitgliedschaft</a></li><li><a onclick="showPage('contact')">Kontakt</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Mo–Fr: 6–23 Uhr</a></li><li><a>Sa–So: 8–21 Uhr</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+49 89 123 456</a></li><li><a>Leopoldstr. 42, München</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 APEX Gym München</p><p style="color:var(--red);">Website von <strong>MODEX</strong></p></div>
+    </footer>
+  </div>
+
+  <!-- KONTAKT -->
+  <div class="page" id="page-contact">
+    <section style="background:var(--black);padding-top:140px;">
+      <div style="max-width:1200px;margin:0 auto;">
+        <p class="label reveal">Werde Teil der Community</p>
+        <h2 class="title reveal">KOMM <span class="red">VORBEI.</span></h2>
+      </div>
+      <div class="contact-grid">
+        <div class="reveal">
+          <p style="font-size:15px;color:var(--muted);line-height:1.9;font-weight:300;margin-bottom:40px;">Dein erstes Training ist kostenlos — kein Vertrag, kein Druck. Einfach vorbeikommen und überzeugen lassen.</p>
+          <div class="contact-details">
+            <div class="contact-detail"><div class="contact-detail-icon">📍</div><div><div class="contact-detail-label">Adresse</div><div class="contact-detail-value">Leopoldstr. 42, 80802 München</div></div></div>
+            <div class="contact-detail"><div class="contact-detail-icon">📞</div><div><div class="contact-detail-label">Telefon</div><div class="contact-detail-value"><a href="tel:+4989123456">+49 89 123 456</a></div></div></div>
+            <div class="contact-detail"><div class="contact-detail-icon">🕐</div><div><div class="contact-detail-label">Öffnungszeiten</div><div class="contact-detail-value">Mo–Fr: 6–23 Uhr · Sa–So: 8–21 Uhr</div></div></div>
+            <a href="https://maps.google.com/?q=Leopoldstr+42+80802+München" target="_blank" class="contact-detail" style="text-decoration:none;border-color:rgba(232,25,44,0.4);">
+              <div class="contact-detail-icon">📍</div>
+              <div><div class="contact-detail-label">Navigation</div><div class="contact-detail-value" style="color:var(--red);">Auf Google Maps öffnen ↗</div></div>
+            </a>
+          </div>
+        </div>
+        <div class="reveal">
+          <h3 style="font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;margin-bottom:32px;">GRATIS <span style="color:var(--red)">PROBE-<br>TRAINING.</span></h3>
+          <div id="contactForm">
+            <div class="form-row">
+              <div class="form-group"><label>Vorname</label><input type="text" placeholder="Max"/></div>
+              <div class="form-group"><label>Nachname</label><input type="text" placeholder="Mustermann"/></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>E-Mail</label><input type="email" placeholder="max@email.de"/></div>
+              <div class="form-group"><label>Telefon</label><input type="tel" placeholder="+49 ..."/></div>
+            </div>
+            <div class="form-group"><label>Gewünschter Termin</label><input type="date"/></div>
+            <div class="form-group"><label>Interesse</label>
+              <select>
+                <option>Allgemeines Training</option>
+                <option>Gewichtsreduktion</option>
+                <option>Muskelaufbau</option>
+                <option>Kampfsport</option>
+                <option>Yoga & Mobility</option>
+              </select>
+            </div>
+            <button class="submit-btn" onclick="submitForm()">Probetraining anfragen</button>
+          </div>
+          <div class="form-success" id="formSuccess">
+            <h3>LET'S GO!</h3>
+            <p>Deine Anfrage ist eingegangen. Wir melden uns innerhalb von 24 Stunden.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-brand"><div class="footer-logo">APEX<span>.</span></div><p>München's härtestes und herzlichstes Gym seit 2019.</p></div>
+        <div class="footer-col"><h4>Navigation</h4><ul><li><a onclick="showPage('home')">Home</a></li><li><a onclick="showPage('courses')">Kurse</a></li><li><a onclick="showPage('pricing')">Mitgliedschaft</a></li><li><a onclick="showPage('contact')">Kontakt</a></li></ul></div>
+        <div class="footer-col"><h4>Öffnungszeiten</h4><ul><li><a>Mo–Fr: 6–23 Uhr</a></li><li><a>Sa–So: 8–21 Uhr</a></li><li><a style="color:var(--red)">24/7 mit Chip-Karte</a></li></ul></div>
+        <div class="footer-col"><h4>Kontakt</h4><ul><li><a>+49 89 123 456</a></li><li><a>Leopoldstr. 42</a></li><li><a>80802 München</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 APEX Gym München</p><p style="color:var(--red);">Website von <strong>MODEX</strong></p></div>
+    </footer>
+  </div>
+
+  <script>
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(initReveal, 100);
+    }
+    function submitForm() {
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('formSuccess').style.display = 'block';
+    }
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+    });
+    function initReveal() {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.reveal').forEach(el => { el.classList.remove('visible'); obs.observe(el); });
+    }
+    initReveal();
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx+'px'; cursor.style.top = my+'px'; });
+    function animRing() { rx += (mx-rx)*0.12; ry += (my-ry)*0.12; ring.style.left = rx+'px'; ring.style.top = ry+'px'; requestAnimationFrame(animRing); }
+    animRing();
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => { ring.style.transform='translate(-50%,-50%) scale(2)'; ring.style.borderColor='var(--red)'; });
+      el.addEventListener('mouseleave', () => { ring.style.transform='translate(-50%,-50%) scale(1)'; ring.style.borderColor='rgba(232,25,44,0.5)'; });
+    });
+  </script>
+</body>
+</html>
